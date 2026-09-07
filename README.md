@@ -35,7 +35,7 @@ your repo access and to practice PR'ing with your team *before* you start
 coding!
 
 - Eng. Yara Daraghmeh : [GitHub](https://github.com/YaraDaraghmeh) / [LinkedIn](https://www.linkedin.com/in/yaradaraghmeh/)
-- Teammate name #2: [GitHub](https://github.com/ghaccountname) / [LinkedIn](https://linkedin.com/in/liaccountname)
+- Valeriia: [GitHub](https://github.com/lerkooow) / [LinkedIn](https://www.linkedin.com/in/valeriia-akh/)
 
    ...
 - Teammate name #n: [GitHub](https://github.com/ghaccountname) / [LinkedIn](https://linkedin.com/in/liaccountname)
