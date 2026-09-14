@@ -38,7 +38,7 @@ coding!
 - Valeriia: [GitHub](https://github.com/lerkooow) / [LinkedIn](https://www.linkedin.com/in/valeriia-akh/)
 
    ...
-- Teammate name #n: [GitHub](https://github.com/ghaccountname) / [LinkedIn](https://linkedin.com/in/liaccountname)
+- Afnan Alzeiti: [GitHub](https://github.com/afnanfayez) / [LinkedIn](https://www.linkedin.com/in/afnan-alzeiti/)
 - Haneen Hanounaa: [GitHub](https://github.com/haneenhanounaa)/[LinkedIn](www.linkedin.com/in/haneen-hanouna-a22a49414)
 
 
