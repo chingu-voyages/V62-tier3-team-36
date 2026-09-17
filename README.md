@@ -40,5 +40,6 @@ coding!
    ...
 - Afnan Alzeiti: [GitHub](https://github.com/afnanfayez) / [LinkedIn](https://www.linkedin.com/in/afnan-alzeiti/)
 - Haneen Hanounaa: [GitHub](https://github.com/haneenhanounaa)/[LinkedIn](www.linkedin.com/in/haneen-hanouna-a22a49414)
+- Tunde Ademola Kujore: [LinkedIn] (https://www.linkedin.com/in/tundeademolakujore/)
 
 
