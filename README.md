@@ -36,6 +36,7 @@ coding!
 
 - Eng. Yara Daraghmeh : [GitHub](https://github.com/YaraDaraghmeh) / [LinkedIn](https://www.linkedin.com/in/yaradaraghmeh/)
 - Valeriia: [GitHub](https://github.com/lerkooow) / [LinkedIn](https://www.linkedin.com/in/valeriia-akh/)
+- Kenisa Tetemke: [GitHub](https://github.com/kenucoffi) /[LinkedIn](www.linkedin.com/in/kenisa-tetemke-135487339)
 
    ...
 - Afnan Alzeiti: [GitHub](https://github.com/afnanfayez) / [LinkedIn](https://www.linkedin.com/in/afnan-alzeiti/)
