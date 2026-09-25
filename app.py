@@ -25,6 +25,10 @@ def create_app(config_class=Config):
     def init_db_command():
         setup_database(get_db())
 
+    @app.get("/")
+    def index():
+        return "<main><h1>Welcome to Our Platform Backend</h1><p>Your backend service is running.</p><p><a href='/health'>Check service health</a></p></main>"
+
     @app.get("/health")
     def health():
         try:
