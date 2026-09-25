@@ -1,10 +1,7 @@
-import React from 'react'
-import ForgetPassword from './ForgotPassword'
+import { ForgotPassword } from "./ForgotPassword";
 
 const page = () => {
-  return (
-      <ForgetPassword/>
-  )
-}
+  return <ForgotPassword />;
+};
 
-export default page
+export default page;
