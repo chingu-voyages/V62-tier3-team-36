@@ -1,16 +1,26 @@
-"""Auth endpoints: /api/login, /api/logout, /api/refresh, /api/me."""
+"""Auth endpoints: /api/signup, /api/login, /api/logout, /api/refresh, /api/me."""
 from flask import Blueprint, g, jsonify, request
 
 from controllers.user_controller import (
+    create_user,
     get_profile,
     login_user,
     logout_user,
     refresh_session,
 )
 from middlewares import require_auth
-from schemas.user_schema import LoginSchema, RefreshSchema, validate
+from schemas.user_schema import LoginSchema, RefreshSchema, SignupSchema, validate
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/api")
+
+
+@auth_bp.post("/signup")
+def signup():
+    data, errors = validate(SignupSchema, request.get_json(silent=True))
+    if errors:
+        return jsonify({"error": "Invalid request", "details": errors}), 422
+    payload, status = create_user(**data)
+    return jsonify(payload), status
 
 
 @auth_bp.post("/login")

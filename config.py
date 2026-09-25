@@ -1,8 +1,16 @@
 """App configuration. All secrets come from environment (see .env)."""
 import os
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 class Config:
+    SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret")
+    MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
+    MONGO_DB_NAME = os.getenv("MONGO_DB_NAME", "sales_dashboard")
+
     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "sqlite:///dev.db")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 

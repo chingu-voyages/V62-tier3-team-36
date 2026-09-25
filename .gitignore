@@ -1,2 +1,7 @@
 # MacOS-specific files
 .DS_Store
+.env
+__pycache__/
+*.py[cod]
+instance/
+.env 

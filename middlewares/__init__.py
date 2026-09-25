@@ -1,4 +1,4 @@
-"""Auth guard: verifies Supabase JWT locally, attaches user to `flask.g`."""
+"""Auth guard: verifies application JWTs, attaches user to `flask.g`."""
 from functools import wraps
 
 import jwt
@@ -6,16 +6,7 @@ from flask import current_app, g, jsonify, request
 
 
 def _decode(token):
-    secret = current_app.config.get("SUPABASE_JWT_SECRET", "")
-    if secret:
-        return jwt.decode(
-            token,
-            secret,
-            algorithms=["HS256"],
-            options={"verify_aud": False},
-        )
-    # Dev fallback when no secret is configured (never use in prod).
-    return jwt.decode(token, options={"verify_signature": False})
+    return jwt.decode(token, current_app.config["SECRET_KEY"], algorithms=["HS256"])
 
 
 def get_bearer_token():
@@ -37,6 +28,8 @@ def require_auth(fn):
         except jwt.ExpiredSignatureError:
             return jsonify({"error": "Session expired"}), 401
         except jwt.InvalidTokenError:
+            return jsonify({"error": "Unauthorized"}), 401
+        if claims.get("type") != "access":
             return jsonify({"error": "Unauthorized"}), 401
         g.user_id = claims.get("sub")
         g.token = token

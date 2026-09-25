@@ -8,7 +8,8 @@ from flask_cors import CORS
 load_dotenv()
 
 from config import Config
-from extensions import db
+from db import get_db, init_mongo
+from init_db import setup_database
 from routes.user_routes import auth_bp
 
 
@@ -17,17 +18,20 @@ def create_app(config_class=Config):
     app.config.from_object(config_class)
     CORS(app, origins=[app.config["FRONTEND_URL"]], supports_credentials=False)
 
-    db.init_app(app)
+    init_mongo(app)
     app.register_blueprint(auth_bp)
+
+    @app.cli.command("init-db")
+    def init_db_command():
+        setup_database(get_db())
 
     @app.get("/health")
     def health():
-        return jsonify({"ok": True})
-
-    with app.app_context():
-        from models import user_model  # noqa: F401  (register tables)
-
-        db.create_all()
+        try:
+            get_db().command("ping")
+            return jsonify(status="ok", database=get_db().name)
+        except Exception as error:
+            return jsonify(status="error", message=str(error)), 500
 
     return app
 
