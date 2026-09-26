@@ -13,9 +13,17 @@ from db import get_db, init_mongo
 from init_db import setup_database
 from routes.user_routes import auth_bp
 
+
+INSECURE_SECRET_KEYS = {None, "", "dev-secret-change-me"}
+
+
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
+    if app.config.get("SECRET_KEY") in INSECURE_SECRET_KEYS:
+        raise RuntimeError(
+            "SECRET_KEY must be set to a strong, private value before startup"
+        )
     CORS(app, origins=[app.config["FRONTEND_URL"]], supports_credentials=False)
 
     init_mongo(app)

@@ -8,6 +8,7 @@ import pytest
 os.environ["MONGO_URI"] = "mongodb://localhost"
 os.environ["MONGO_DB_NAME"] = "password_reset_tests"
 os.environ["RESEND_API_KEY"] = "re_test_key"
+os.environ["SECRET_KEY"] = "test-import-secret-key-that-is-longer-than-32-bytes"
 
 from app import create_app
 from db import get_db
@@ -49,7 +50,6 @@ def registered_user(client):
         "organisation_name": "Test Organisation",
         "email": "reset.user@example.com",
         "password": "OldPassword123!",
-        "role": "VIEWER",
     }
     response = client.post("/api/signup", json=payload)
     assert response.status_code == 201
