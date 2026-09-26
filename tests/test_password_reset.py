@@ -1,5 +1,6 @@
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
+from unittest.mock import Mock
 from urllib.parse import parse_qs, urlparse
 
 from db import get_db
@@ -34,10 +35,9 @@ def test_forgot_password_hides_account_existence(
     assert existing.status_code == unknown.status_code == 202
     assert existing.get_json() == unknown.get_json() == GENERIC_MESSAGE
     assert "token" not in existing.get_json()
-    assert mocked_email.call_count == 2
-    assert mocked_email.call_args_list[1].args == (None, None)
+    mocked_email.assert_called_once()
 
-    token = parse_qs(urlparse(mocked_email.call_args_list[0].args[1]).query)["token"][0]
+    token = parse_qs(urlparse(mocked_email.call_args.args[1]).query)["token"][0]
     with app.app_context():
         record = get_db().password_reset_tokens.find_one()
         assert record["token_hash"] != token
@@ -126,6 +126,24 @@ def test_email_failure_does_not_leak_account(
     assert response.status_code == 202
     assert response.get_json() == GENERIC_MESSAGE
     assert "token" not in response.get_json()
+
+
+def test_password_reset_work_is_queued_before_account_lookup(app, registered_user):
+    executor = Mock()
+    app.config["PASSWORD_RESET_SYNCHRONOUS"] = False
+    app.extensions["password_reset_executor"] = executor
+
+    with app.test_client() as queued_client:
+        existing = queued_client.post(
+            "/api/forgot_password", json={"email": registered_user["email"]}
+        )
+        unknown = queued_client.post(
+            "/api/forgot_password", json={"email": "unknown@example.com"}
+        )
+
+    assert existing.status_code == unknown.status_code == 202
+    assert existing.get_json() == unknown.get_json() == GENERIC_MESSAGE
+    assert executor.submit.call_count == 2
 
 
 def test_duplicate_request_respects_cooldown(client, registered_user, mocked_email):

@@ -12,7 +12,7 @@ from pymongo.errors import DuplicateKeyError
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from db import get_db
-from services.email_service import enqueue_password_reset_email
+from services.email_service import send_password_reset_email
 
 PASSWORD_RESET_RESPONSE = {
     "message": (
@@ -136,21 +136,12 @@ def _hash_reset_token(token):
     return hashlib.sha256(token.encode("utf-8")).hexdigest()
 
 
-def _queue_reset_email(recipient, reset_url):
-    try:
-        enqueue_password_reset_email(recipient, reset_url)
-    except Exception:
-        # Preserve the same API response for every email address.
-        current_app.logger.exception("Failed to queue password reset email")
-
-
-def request_password_reset(email):
-    """Create a single-use token and email it without revealing account status."""
+def _process_password_reset(email):
+    """Create and deliver a reset token inside a non-request worker."""
     database = get_db()
-    user = database.users.find_one({"email": email.strip().lower()})
+    user = database.users.find_one({"email": email})
     if user is None:
-        _queue_reset_email(None, None)
-        return PASSWORD_RESET_RESPONSE.copy(), 202
+        return
 
     now = datetime.now(timezone.utc)
     cooldown = timedelta(
@@ -177,7 +168,7 @@ def request_password_reset(email):
             return_document=ReturnDocument.AFTER,
         )
     except DuplicateKeyError:
-        return PASSWORD_RESET_RESPONSE.copy(), 202
+        return
 
     token_record = {
         "user_id": user["_id"],
@@ -191,7 +182,31 @@ def request_password_reset(email):
 
     query = urlencode({"token": token})
     reset_url = f'{current_app.config["FRONTEND_URL"]}/ResetPassword?{query}'
-    _queue_reset_email(user["email"], reset_url)
+    try:
+        send_password_reset_email(user["email"], reset_url)
+    except Exception:
+        current_app.logger.exception("Failed to send password reset email")
+
+
+def _run_password_reset_job(app, email):
+    with app.app_context():
+        _process_password_reset(email)
+
+
+def request_password_reset(email):
+    """Queue reset work and immediately return the same response for every email."""
+    app = current_app._get_current_object()
+    normalized_email = email.strip().lower()
+
+    try:
+        if app.config.get("PASSWORD_RESET_SYNCHRONOUS", False):
+            _process_password_reset(normalized_email)
+        else:
+            app.extensions["password_reset_executor"].submit(
+                _run_password_reset_job, app, normalized_email
+            )
+    except Exception:
+        app.logger.exception("Failed to queue password reset request")
 
     return PASSWORD_RESET_RESPONSE.copy(), 202
 

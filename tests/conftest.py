@@ -25,6 +25,7 @@ class TestConfig:
     RESEND_FROM_EMAIL = "Sales Dashboard <onboarding@resend.dev>"
     RESET_TOKEN_TTL_MINUTES = 60
     RESET_REQUEST_COOLDOWN_SECONDS = 60
+    PASSWORD_RESET_SYNCHRONOUS = True
 
 
 @pytest.fixture()
@@ -58,5 +59,5 @@ def registered_user(client):
 
 @pytest.fixture()
 def mocked_email():
-    with patch("controllers.user_controller.enqueue_password_reset_email") as sender:
+    with patch("controllers.user_controller.send_password_reset_email") as sender:
         yield sender

@@ -1,4 +1,5 @@
 """Flask application factory for the Sales Dashboard API."""
+from concurrent.futures import ThreadPoolExecutor
 import os
 
 from dotenv import load_dotenv
@@ -37,6 +38,10 @@ def create_app(config_class=Config):
     CORS(app, origins=[app.config["FRONTEND_URL"]], supports_credentials=False)
 
     init_mongo(app)
+    if not app.config.get("PASSWORD_RESET_SYNCHRONOUS", False):
+        app.extensions["password_reset_executor"] = ThreadPoolExecutor(
+            max_workers=2, thread_name_prefix="password-reset"
+        )
     app.register_blueprint(auth_bp)
 
     @app.cli.command("init-db")
