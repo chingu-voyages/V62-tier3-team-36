@@ -40,6 +40,15 @@ PASSWORD_RESET_TOKENS = {
     },
 }
 
+PASSWORD_RESET_LOCKS = {
+    "bsonType": "object",
+    "required": ["requested_at", "expires_at"],
+    "properties": {
+        "requested_at": {"bsonType": "date"},
+        "expires_at": {"bsonType": "date"},
+    },
+}
+
 CSV_UPLOADS = {
     "bsonType": "object",
     "required": [
@@ -115,6 +124,7 @@ ANALYSIS_SUMMARIES = {
 COLLECTIONS = {
     "users": USERS,
     "password_reset_tokens": PASSWORD_RESET_TOKENS,
+    "password_reset_locks": PASSWORD_RESET_LOCKS,
     "csv_uploads": CSV_UPLOADS,
     "sales_records": SALES_RECORDS,
     "analysis_summaries": ANALYSIS_SUMMARIES,
@@ -144,6 +154,9 @@ def _create_indexes(db):
     db.password_reset_tokens.create_index([("token_hash", ASCENDING)], unique=True)
     db.password_reset_tokens.create_index([("user_id", ASCENDING)])
     db.password_reset_tokens.create_index(
+        [("expires_at", ASCENDING)], expireAfterSeconds=0
+    )
+    db.password_reset_locks.create_index(
         [("expires_at", ASCENDING)], expireAfterSeconds=0
     )
 

@@ -23,14 +23,14 @@ PASSWORD_RESET_RESPONSE = {
 INVALID_RESET_TOKEN_RESPONSE = {"error": "Invalid or expired password reset token"}
 
 
-def create_user(full_name, organisation_name, email, password, role):
+def create_user(full_name, organisation_name, email, password):
     """Create a MongoDB user with a one-way password hash."""
     user = {
         "full_name": full_name.strip(),
         "organisation_name": organisation_name.strip(),
         "email": email.strip().lower(),
         "password_hash": generate_password_hash(password),
-        "role": role,
+        "role": "VIEWER",
         "created_at": datetime.now(timezone.utc),
     }
     try:
@@ -138,19 +138,34 @@ def request_password_reset(email):
     cooldown = timedelta(
         seconds=current_app.config["RESET_REQUEST_COOLDOWN_SECONDS"]
     )
-    recent_request = database.password_reset_tokens.find_one(
-        {"user_id": user["_id"], "created_at": {"$gte": now - cooldown}}
+    token = secrets.token_urlsafe(32)
+    expires_at = now + timedelta(
+        minutes=current_app.config["RESET_TOKEN_TTL_MINUTES"]
     )
-    if recent_request is not None:
+
+    # Claim the per-user cooldown atomically. The lock document uses the user id
+    # as its MongoDB _id, so concurrent upserts cannot both succeed.
+    try:
+        database.password_reset_locks.find_one_and_update(
+            {
+                "_id": user["_id"],
+                "$or": [
+                    {"requested_at": {"$lt": now - cooldown}},
+                    {"requested_at": {"$exists": False}},
+                ],
+            },
+            {"$set": {"requested_at": now, "expires_at": now + cooldown}},
+            upsert=True,
+            return_document=ReturnDocument.AFTER,
+        )
+    except DuplicateKeyError:
         return PASSWORD_RESET_RESPONSE.copy(), 202
 
-    token = secrets.token_urlsafe(32)
     token_record = {
         "user_id": user["_id"],
         "token_hash": _hash_reset_token(token),
         "created_at": now,
-        "expires_at": now
-        + timedelta(minutes=current_app.config["RESET_TOKEN_TTL_MINUTES"]),
+        "expires_at": expires_at,
     }
 
     database.password_reset_tokens.delete_many({"user_id": user["_id"]})

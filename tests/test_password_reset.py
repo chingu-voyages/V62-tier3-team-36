@@ -1,3 +1,4 @@
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 from urllib.parse import parse_qs, urlparse
 
@@ -125,11 +126,46 @@ def test_duplicate_request_respects_cooldown(client, registered_user, mocked_ema
     mocked_email.assert_called_once()
 
 
+def test_concurrent_requests_issue_only_one_token(app, registered_user, mocked_email):
+    def request_reset():
+        with app.test_client() as thread_client:
+            return thread_client.post(
+                "/api/forgot_password", json={"email": registered_user["email"]}
+            )
+
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        responses = list(executor.map(lambda _: request_reset(), range(4)))
+
+    assert all(response.status_code == 202 for response in responses)
+    assert mocked_email.call_count == 1
+
+    with app.app_context():
+        assert get_db().password_reset_tokens.count_documents({}) == 1
+
+
+def test_signup_rejects_caller_assigned_admin_role(client):
+    response = client.post(
+        "/api/signup",
+        json={
+            "full_name": "Unauthorized Admin",
+            "organisation_name": "Test Organisation",
+            "email": "admin-request@example.com",
+            "password": "Password123!",
+            "role": "ADMIN",
+        },
+    )
+
+    assert response.status_code == 422
+    assert "role" in response.get_json()["details"]
+
+
 def test_password_reset_indexes_are_created(app):
     with app.app_context():
         database = get_db()
         _create_indexes(database)
         indexes = database.password_reset_tokens.index_information().values()
+        lock_indexes = database.password_reset_locks.index_information().values()
 
     assert any(index.get("unique") for index in indexes)
     assert any(index.get("expireAfterSeconds") == 0 for index in indexes)
+    assert any(index.get("expireAfterSeconds") == 0 for index in lock_indexes)

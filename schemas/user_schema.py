@@ -1,6 +1,7 @@
 """Request validation schemas for authentication endpoints."""
 from marshmallow import Schema, fields, validate
 
+
 class ForgotPasswordSchema(Schema):
     email = fields.Email(required=True)
 
@@ -20,13 +21,11 @@ class LoginSchema(Schema):
 
 class SignupSchema(Schema):
     full_name = fields.Str(required=True, validate=validate.Length(min=1, max=120))
-    organisation_name = fields.Str(required=True, validate=validate.Length(min=1, max=120))
+    organisation_name = fields.Str(
+        required=True, validate=validate.Length(min=1, max=120)
+    )
     email = fields.Email(required=True)
     password = fields.Str(required=True, validate=validate.Length(min=8, max=128))
-    role = fields.Str(
-        load_default="VIEWER",
-        validate=validate.OneOf(["ADMIN", "ANALYST", "VIEWER"]),
-    )
 
 
 class RefreshSchema(Schema):
