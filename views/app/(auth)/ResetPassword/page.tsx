@@ -1,7 +1,14 @@
 import { ResetPassword } from "./ResetPassword";
 
-const page = () => {
-  return <ResetPassword />;
+interface ResetPasswordPageProps {
+  searchParams: Promise<{ token?: string | string[] }>;
+}
+
+const ResetPasswordPage = async ({ searchParams }: ResetPasswordPageProps) => {
+  const params = await searchParams;
+  const token = Array.isArray(params.token) ? params.token[0] : (params.token ?? "");
+
+  return <ResetPassword token={token} />;
 };
 
-export default page;
+export default ResetPasswordPage;

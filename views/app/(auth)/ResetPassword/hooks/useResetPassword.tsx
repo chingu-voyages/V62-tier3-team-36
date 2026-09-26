@@ -1,17 +1,20 @@
-import { useState } from "react";
+"use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import axios from "axios";
 import { z } from "zod";
 
 import { reset_password } from "@/api/auth/api";
 
-import type { SubmitEvent } from "react";
+import type { FormEvent } from "react";
 
 const resetPasswordSchema = z
   .object({
     password: z
       .string()
       .min(8, "Password must be at least 8 characters.")
-      .max(64, "Password must be less than 64 characters."),
+      .max(128, "Password must be no more than 128 characters."),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -19,42 +22,41 @@ const resetPasswordSchema = z
     path: ["confirmPassword"],
   });
 
-export const useResetPassword = () => {
+export const useResetPassword = (token: string) => {
+  const router = useRouter();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError("");
+
+    if (!token) {
+      router.replace("/ExpireResetLink");
+      return;
+    }
 
     const result = resetPasswordSchema.safeParse({
       password,
       confirmPassword,
     });
-
     if (!result.success) {
       setError(result.error.issues[0].message);
       return;
     }
 
     setIsLoading(true);
-    setError("");
-
     try {
-      const response = await reset_password({
-        password: result.data.password,
-      });
-
-      if (response.status === 200) {
-        // do something
-        return;
+      await reset_password({ token, password: result.data.password });
+      router.replace("/PasswordResetSuccess");
+    } catch (requestError: unknown) {
+      if (axios.isAxiosError(requestError) && requestError.response?.status === 400) {
+        router.replace("/ExpireResetLink");
+      } else {
+        setError("Could not reset your password. Please try again.");
       }
-
-      setError("Failed to reset password.");
-    } catch (err) {
-      console.error(err);
-      setError("Something went wrong. Please try again.");
     } finally {
       setIsLoading(false);
     }
