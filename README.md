@@ -13,6 +13,11 @@ in your `readme` feel free to replace the text we've provided here.
 
 > Own it & Make it your Own!
 
+## Password reset
+
+The MongoDB and Resend setup, automated test command, and end-to-end checklist
+are documented in [docs/password_reset.md](./docs/password_reset.md).
+
 ## Team Documents
 
 You may find these helpful as you work together to organize your project.
