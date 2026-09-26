@@ -1,37 +1,13 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
 
-import { forgot_password } from "../../../api/auth/api";
+import { useForgotPassword } from "./hooks/useForgotPassword";
 
-const ForgetPassword = () => {
-  const [email, setEmail] = useState("");
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setMessage("");
-    setError("");
-
-    if (!email.trim()) {
-      setError("Please enter a valid email address.");
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const response = await forgot_password({ email: email.trim() });
-      if (response.status === 202) {
-        setMessage(response.data.message);
-      }
-    } catch {
-      setError("Could not send the reset email. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  }
+export const ForgotPassword = () => {
+  const { email, setEmail, isLoading, error, message, handleSubmit } =
+    useForgotPassword();
 
   return (
     <div>
@@ -43,29 +19,30 @@ const ForgetPassword = () => {
         Enter your email and we will send you a secure reset link.
       </div>
       <form onSubmit={handleSubmit} className="space-y-[12px] w-full">
-        {error ? <p role="alert">{error}</p> : null}
+        {error ? (
+          <div
+            className="p-[10px] border-[0.8px] border-[#202020] bg-[#E0E0E0] text-[#202020] text-xs w-full"
+            role="alert"
+          >
+            {error}
+          </div>
+        ) : null}
         {message ? <p role="status">{message}</p> : null}
-        <input
+        <Input
           value={email}
-          onChange={(event) => setEmail(event.target.value)}
-          className="p-[13px] bg-[#FAFAFA] border-1 border-[#202020] w-full h-[46px]"
+          setValue={setEmail}
+          isLoading={isLoading}
+          placeholder="Work email"
           type="email"
           name="email"
           autoComplete="email"
-          placeholder="Work email"
-          disabled={isLoading}
           required
         />
-        <button
-          className="p-[13px] border-2 border-[#202020] cursor-pointer hover:bg-gray-400 flex items-center justify-center bg-[#D7D7D7] font-bold text-[#202020] w-full h-[46px]"
-          type="submit"
-          disabled={isLoading}
-        >
-          {isLoading ? "Sending..." : "Continue"}
-        </button>
+        <Button
+          isLoading={isLoading}
+          text={isLoading ? "Sending..." : "Continue"}
+        />
       </form>
     </div>
   );
 };
-
-export default ForgetPassword;

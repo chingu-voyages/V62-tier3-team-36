@@ -1,4 +1,4 @@
-import ResetPassword from "./ResetPassword";
+import { ResetPassword } from "./ResetPassword";
 
 interface ResetPasswordPageProps {
   searchParams: Promise<{ token?: string | string[] }>;
