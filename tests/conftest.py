@@ -58,5 +58,5 @@ def registered_user(client):
 
 @pytest.fixture()
 def mocked_email():
-    with patch("controllers.user_controller.send_password_reset_email") as sender:
+    with patch("controllers.user_controller.enqueue_password_reset_email") as sender:
         yield sender

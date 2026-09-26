@@ -1,8 +1,12 @@
 """Transactional email delivery through Resend."""
+from concurrent.futures import ThreadPoolExecutor
 from html import escape
 
 import resend
 from flask import current_app
+
+
+_email_executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="reset-email")
 
 
 def send_password_reset_email(recipient, reset_url):
@@ -32,3 +36,23 @@ def send_password_reset_email(recipient, reset_url):
         ),
     }
     return resend.Emails.send(params)
+
+
+def _deliver_password_reset_email(app, recipient, reset_url):
+    if not recipient or not reset_url:
+        return None
+
+    with app.app_context():
+        try:
+            return send_password_reset_email(recipient, reset_url)
+        except Exception:
+            app.logger.exception("Failed to send password reset email")
+            return None
+
+
+def enqueue_password_reset_email(recipient, reset_url):
+    """Queue delivery so request timing does not reveal whether an account exists."""
+    app = current_app._get_current_object()
+    return _email_executor.submit(
+        _deliver_password_reset_email, app, recipient, reset_url
+    )

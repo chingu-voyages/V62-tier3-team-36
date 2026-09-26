@@ -12,7 +12,7 @@ from pymongo.errors import DuplicateKeyError
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from db import get_db
-from services.email_service import send_password_reset_email
+from services.email_service import enqueue_password_reset_email
 
 PASSWORD_RESET_RESPONSE = {
     "message": (
@@ -31,6 +31,7 @@ def create_user(full_name, organisation_name, email, password):
         "email": email.strip().lower(),
         "password_hash": generate_password_hash(password),
         "role": "VIEWER",
+        "session_version": 0,
         "created_at": datetime.now(timezone.utc),
     }
     try:
@@ -61,10 +62,16 @@ def _user_payload(user):
     }
 
 
-def _create_session_token(user_id, token_type, expires_in):
+def _create_session_token(user, token_type, expires_in):
     now = datetime.now(timezone.utc)
     return jwt.encode(
-        {"sub": str(user_id), "type": token_type, "iat": now, "exp": now + expires_in},
+        {
+            "sub": str(user["_id"]),
+            "type": token_type,
+            "sv": user.get("session_version", 0),
+            "iat": now,
+            "exp": now + expires_in,
+        },
         current_app.config["SECRET_KEY"],
         algorithm="HS256",
     )
@@ -72,8 +79,8 @@ def _create_session_token(user_id, token_type, expires_in):
 
 def _session_payload(user):
     return {
-        "access_token": _create_session_token(user["_id"], "access", timedelta(hours=1)),
-        "refresh_token": _create_session_token(user["_id"], "refresh", timedelta(days=30)),
+        "access_token": _create_session_token(user, "access", timedelta(hours=1)),
+        "refresh_token": _create_session_token(user, "refresh", timedelta(days=30)),
         "user": _user_payload(user),
     }
 
@@ -110,6 +117,8 @@ def refresh_session(refresh_token):
         return {"error": "Session expired"}, 401
     if user is None:
         return {"error": "Session expired"}, 401
+    if claims.get("sv", 0) != user.get("session_version", 0):
+        return {"error": "Session expired"}, 401
     return _session_payload(user), 200
 
 
@@ -127,11 +136,20 @@ def _hash_reset_token(token):
     return hashlib.sha256(token.encode("utf-8")).hexdigest()
 
 
+def _queue_reset_email(recipient, reset_url):
+    try:
+        enqueue_password_reset_email(recipient, reset_url)
+    except Exception:
+        # Preserve the same API response for every email address.
+        current_app.logger.exception("Failed to queue password reset email")
+
+
 def request_password_reset(email):
     """Create a single-use token and email it without revealing account status."""
     database = get_db()
     user = database.users.find_one({"email": email.strip().lower()})
     if user is None:
+        _queue_reset_email(None, None)
         return PASSWORD_RESET_RESPONSE.copy(), 202
 
     now = datetime.now(timezone.utc)
@@ -173,11 +191,7 @@ def request_password_reset(email):
 
     query = urlencode({"token": token})
     reset_url = f'{current_app.config["FRONTEND_URL"]}/ResetPassword?{query}'
-    try:
-        send_password_reset_email(user["email"], reset_url)
-    except Exception:
-        # Preserve the same response for known and unknown email addresses.
-        current_app.logger.exception("Failed to send password reset email")
+    _queue_reset_email(user["email"], reset_url)
 
     return PASSWORD_RESET_RESPONSE.copy(), 202
 
@@ -204,7 +218,8 @@ def reset_user_password(token, password):
             "$set": {
                 "password_hash": generate_password_hash(password),
                 "password_changed_at": now,
-            }
+            },
+            "$inc": {"session_version": 1},
         },
     )
     if result.matched_count != 1:

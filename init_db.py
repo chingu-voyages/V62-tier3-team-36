@@ -23,6 +23,7 @@ USERS = {
         "email": {"bsonType": "string"},
         "password_hash": {"bsonType": "string"},
         "role": {"enum": ["ADMIN", "ANALYST", "VIEWER"]},
+        "session_version": {"bsonType": "int", "minimum": 0},
         "created_at": {"bsonType": "date"},
         "password_changed_at": {"bsonType": "date"},
     },

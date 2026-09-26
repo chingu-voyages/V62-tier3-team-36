@@ -34,9 +34,10 @@ def test_forgot_password_hides_account_existence(
     assert existing.status_code == unknown.status_code == 202
     assert existing.get_json() == unknown.get_json() == GENERIC_MESSAGE
     assert "token" not in existing.get_json()
-    mocked_email.assert_called_once()
+    assert mocked_email.call_count == 2
+    assert mocked_email.call_args_list[1].args == (None, None)
 
-    token = parse_qs(urlparse(mocked_email.call_args.args[1]).query)["token"][0]
+    token = parse_qs(urlparse(mocked_email.call_args_list[0].args[1]).query)["token"][0]
     with app.app_context():
         record = get_db().password_reset_tokens.find_one()
         assert record["token_hash"] != token
@@ -44,6 +45,12 @@ def test_forgot_password_hides_account_existence(
 
 
 def test_complete_password_reset_flow(client, registered_user, mocked_email):
+    initial_login = client.post(
+        "/api/login",
+        json={"email": registered_user["email"], "password": "OldPassword123!"},
+    )
+    old_access_token = initial_login.get_json()["access_token"]
+    old_refresh_token = initial_login.get_json()["refresh_token"]
     token = _request_token(client, mocked_email)
 
     reset = client.post(
@@ -62,11 +69,19 @@ def test_complete_password_reset_flow(client, registered_user, mocked_email):
         "/api/reset_password",
         json={"token": token, "password": "AnotherPassword123!"},
     )
+    old_access = client.get(
+        "/api/me", headers={"Authorization": f"Bearer {old_access_token}"}
+    )
+    old_refresh = client.post(
+        "/api/refresh", json={"refresh_token": old_refresh_token}
+    )
 
     assert reset.status_code == 200
     assert old_login.status_code == 401
     assert new_login.status_code == 200
     assert reused.status_code == 400
+    assert old_access.status_code == 401
+    assert old_refresh.status_code == 401
 
 
 def test_expired_token_is_rejected(app, client, registered_user, mocked_email):
