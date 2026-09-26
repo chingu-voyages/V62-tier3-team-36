@@ -14,13 +14,23 @@ from init_db import setup_database
 from routes.user_routes import auth_bp
 
 
-INSECURE_SECRET_KEYS = {None, "", "dev-secret-change-me"}
+INSECURE_SECRET_KEYS = {
+    None,
+    "",
+    "dev-secret-change-me",
+    "replace-with-a-long-random-secret",
+}
 
 
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
-    if app.config.get("SECRET_KEY") in INSECURE_SECRET_KEYS:
+    secret_key = app.config.get("SECRET_KEY")
+    if (
+        secret_key in INSECURE_SECRET_KEYS
+        or not isinstance(secret_key, str)
+        or len(secret_key) < 32
+    ):
         raise RuntimeError(
             "SECRET_KEY must be set to a strong, private value before startup"
         )
