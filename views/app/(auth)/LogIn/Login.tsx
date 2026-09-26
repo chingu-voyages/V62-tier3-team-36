@@ -1,12 +1,12 @@
 "use client"
 import { login } from '@/api/auth/api'
-import React, { useState } from 'react'
+import { FormEvent, useState } from 'react'
 
 const Login = () => {
   const [iserror,setError]=useState(false)
   const [email,setEmail] = useState("")
   const [password,setPassword]= useState("")
-  async function handleLogin(e:any){
+  async function handleLogin(e:FormEvent<HTMLFormElement>){
     e.preventDefault()
     if(email == "" || password ==""){
       setError(true)
