@@ -5,18 +5,17 @@ import { useRouter } from "next/navigation";
 
 import { login } from "@/api/auth/api";
 
-import type { SubmitEvent } from "react";
+import type { FormEvent } from "react";
 
 export const useLogin = () => {
   const router = useRouter();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     setError("");
 
     if (!email.trim() || !password) {
@@ -25,19 +24,13 @@ export const useLogin = () => {
     }
 
     setIsLoading(true);
-
     try {
-      const response = await login({ email, password });
-
-      if (response.status === 200) {
-        sessionStorage.setItem("token", response.token);
-        router.push("/Dashboard");
-        return;
-      }
-
-      setError(response.error || "Login failed. Please try again.");
+      const response = await login({ email: email.trim(), password });
+      sessionStorage.setItem("access_token", response.data.access_token);
+      sessionStorage.setItem("refresh_token", response.data.refresh_token);
+      router.push("/Dashboard");
     } catch {
-      setError("Something went wrong. Please try again.");
+      setError("Email or password is incorrect.");
     } finally {
       setIsLoading(false);
     }

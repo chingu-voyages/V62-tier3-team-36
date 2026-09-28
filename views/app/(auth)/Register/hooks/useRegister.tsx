@@ -1,97 +1,104 @@
-"use client"
+"use client";
 
-import { register } from "@/api/auth/api"
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import {z} from "zod"
-type ErrorType = {
-    email?:string
-    password?:string
-    full_name?:string
-    confirm_password?:string
-    serverError?:string
-}
-export function useRegister(){
-    const [email,setEmail] = useState("")
-    const [password,setPassword] = useState("")
-    const [confirm_password,setConfirmPassword]=useState("")
-    const [full_name,setFullname] = useState("")
-    const [error,setError] = useState<ErrorType>({})
-    const [isLoading,setLoading] = useState(false)
-    
-    const route = useRouter()
-    const RegisterSchema = z.object({
-            full_name:z.string().min(3,"Name Should be min of 3 characters").max(50,"Name should be max 50 characters"),
-            email:z.email("Email is not valied").trim(),
-            password:z
-                  .string()
-                  .min(8, "Password must be at least 8 characters.")
-                  .max(64, "Password must be less than 64 characters."),
-            confirm_password:z.string()
-        }).refine((data)=>data.password === data.confirm_password ,{
-            
-            message: "Passwords do not match.",
-            path: ["confirm_password"]
-        })
-    async function handleRegister(e:any){
-        e.preventDefault()
-        setError({})
-        
-        setLoading(true)
-        if(password != confirm_password){
-            setError({confirm_password:"Passwords do not match."})
-        }
-        const result = RegisterSchema.safeParse({email:email,password:password,confirm_password:confirm_password,full_name:full_name})
-        if(!result.success){
-            const flattend = z.flattenError(result.error)
-            setError({email:flattend.fieldErrors.email?.[0] ?? undefined
-                ,password:flattend.fieldErrors.password?.[0] ?? undefined
-                ,confirm_password:flattend.fieldErrors.confirm_password?.[0] ?? undefined
-                ,full_name:flattend.fieldErrors.full_name?.[0] ?? undefined })   
-            return 
-        }
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { z } from "zod";
 
+import { register } from "@/api/auth/api";
 
-        try{
-            const response = await register({email:email,password:password,full_name:full_name})
-            if(response.status == 200){
-                sessionStorage.setItem("token",response.token)
-                route.push("/Dashboard")
-                return
-            }
-            else if(response.status == 422){
-                setError(response.error)
-                 
-                return
-            }
-        }catch(error:any){
-            setError({serverError:"Some thing is wrong please try Again !"})
-        }
-        finally{
-            setLoading(false)
-        }
-            
+import type { FormEvent } from "react";
+
+type RegisterErrors = {
+  email?: string;
+  password?: string;
+  fullName?: string;
+  organisationName?: string;
+  confirmPassword?: string;
+  server?: string;
+};
+
+const registerSchema = z
+  .object({
+    fullName: z.string().trim().min(1, "Full name is required.").max(120),
+    organisationName: z
+      .string()
+      .trim()
+      .min(1, "Organisation name is required.")
+      .max(120),
+    email: z.email("Please enter a valid email.").trim(),
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters.")
+      .max(128, "Password must be no more than 128 characters."),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match.",
+    path: ["confirmPassword"],
+  });
+
+export function useRegister() {
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [organisationName, setOrganisationName] = useState("");
+  const [errors, setErrors] = useState<RegisterErrors>({});
+  const [isLoading, setIsLoading] = useState(false);
+
+  async function handleRegister(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setErrors({});
+
+    const result = registerSchema.safeParse({
+      email,
+      password,
+      confirmPassword,
+      fullName,
+      organisationName,
+    });
+    if (!result.success) {
+      const fields = z.flattenError(result.error).fieldErrors;
+      setErrors({
+        email: fields.email?.[0],
+        password: fields.password?.[0],
+        confirmPassword: fields.confirmPassword?.[0],
+        fullName: fields.fullName?.[0],
+        organisationName: fields.organisationName?.[0],
+      });
+      return;
     }
-    function resetTextFields(){
-        useEffect(()=>{
-            if(error.email ) {setEmail("")}
-            if(error.password) {setPassword("")}
-            if(error.confirm_password) {setConfirmPassword("")}
-            if(error.full_name) {setFullname("")}
-        },[error])
+
+    setIsLoading(true);
+    try {
+      await register({
+        email: result.data.email,
+        password: result.data.password,
+        full_name: result.data.fullName,
+        organisation_name: result.data.organisationName,
+      });
+      router.push("/LogIn");
+    } catch {
+      setErrors({ server: "Could not create the account. Please try again." });
+    } finally {
+      setIsLoading(false);
     }
-    resetTextFields()
-    return ({
-        email,
-        setEmail,
-        password,
-        setPassword,
-        full_name,
-        setFullname,
-        isLoading,
-        error,
-        confirm_password,
-        setConfirmPassword,
-        handleRegister
-    })
+  }
+
+  return {
+    email,
+    setEmail,
+    password,
+    setPassword,
+    fullName,
+    setFullName,
+    organisationName,
+    setOrganisationName,
+    isLoading,
+    errors,
+    confirmPassword,
+    setConfirmPassword,
+    handleRegister,
+  };
 }
