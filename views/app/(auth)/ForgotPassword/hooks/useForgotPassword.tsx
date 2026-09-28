@@ -1,53 +1,41 @@
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+"use client";
 
+import { useState } from "react";
 import { z } from "zod";
 
 import { forgot_password } from "@/api/auth/api";
 
-import type { SubmitEvent } from "react";
+import type { FormEvent } from "react";
 
 const forgotPasswordSchema = z.object({
-  email: z
-    .email("Please enter a valid email.")
-    .trim()
-    .min(1, "Email is required."),
+  email: z.email("Please enter a valid email.").trim(),
 });
 
 export const useForgotPassword = () => {
-  const router = useRouter();
-
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
 
-  const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError("");
+    setMessage("");
 
     const result = forgotPasswordSchema.safeParse({ email });
-
     if (!result.success) {
       setError(result.error.issues[0].message);
       return;
     }
 
     setIsLoading(true);
-    setError("");
-
     try {
-      const response = await forgot_password({
-        email: result.data.email,
-      });
-
-      if (response.status === 200) {
-        router.push("/ResetPassword");
-        return;
+      const response = await forgot_password({ email: result.data.email });
+      if (response.status === 202) {
+        setMessage(response.data.message);
       }
-
-      setError("Failed to send reset email.");
-    } catch (err) {
-      console.error(err);
-      setError("Something went wrong. Please try again.");
+    } catch {
+      setError("Could not send the reset email. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -58,6 +46,7 @@ export const useForgotPassword = () => {
     setEmail,
     isLoading,
     error,
+    message,
     handleSubmit,
   };
 };

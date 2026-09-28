@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 
-import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
 
 import { useLogin } from "./hooks/useLogin";
 
@@ -31,43 +31,41 @@ export const Login = () => {
           ? "Please fix the errors before continuing."
           : "Enter your email and password to continue."}
       </div>
-
       <form onSubmit={handleSubmit} className="space-y-[12px] w-full">
-        {error && (
-          <div className="p-[10px] border-[0.8px] border-[#202020] bg-[#E0E0E0] text-[#202020] text-xs w-full">
+        {error ? (
+          <div
+            className="p-[10px] border-[0.8px] border-[#202020] bg-[#E0E0E0] text-[#202020] text-xs w-full"
+            role="alert"
+          >
             {error}
           </div>
-        )}
-
-        <div className="flex flex-col">
-          <Input
-            value={email}
-            setValue={setEmail}
-            isLoading={isLoading}
-            placeholder="Work email"
-            type="email"
-            disabled={isLoading}
-          />
-        </div>
-
-        <div className="flex flex-col">
-          <Input
-            value={password}
-            setValue={setPassword}
-            isLoading={isLoading}
-            placeholder="Password"
-            type="password"
-            disabled={isLoading}
-          />
-        </div>
-
+        ) : null}
+        <Input
+          value={email}
+          setValue={setEmail}
+          isLoading={isLoading}
+          placeholder="Work email"
+          type="email"
+          name="email"
+          autoComplete="email"
+          required
+        />
+        <Input
+          value={password}
+          setValue={setPassword}
+          isLoading={isLoading}
+          placeholder="Password"
+          type="password"
+          name="password"
+          autoComplete="current-password"
+          required
+        />
         <Button
           isLoading={isLoading}
           text={isLoading ? "Logging in..." : "Continue"}
         />
       </form>
-
-      <div className="mt-[16px] flex flex-col space-y-[8px] text-center">
+      <div className="mt-[16px] text-center">
         <Link
           href="/ForgotPassword"
           className="text-[14px] text-[#6F6F6F] hover:text-[#222222] font-medium"
