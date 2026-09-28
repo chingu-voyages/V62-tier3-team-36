@@ -22,7 +22,8 @@ interface ForgotPassword {
 }
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL,
+  baseURL:
+    process.env.NEXT_PUBLIC_BACKEND_URL ?? "https://v62-tier3-team-36.onrender.com",
   headers: {
     Accept: "application/json",
     "Content-Type": "application/json",

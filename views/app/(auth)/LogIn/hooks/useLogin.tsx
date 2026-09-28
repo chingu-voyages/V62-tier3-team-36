@@ -1,14 +1,22 @@
 "use client";
 
 import { useState } from "react";
+
 import { useRouter } from "next/navigation";
 
+import { AxiosError } from "axios";
+
 import { login } from "@/api/auth/api";
+import { setAuthSession } from "../../../../utils/authSession";
+import { useAuthStore } from "@/store/authStore";
 
 import type { FormEvent } from "react";
 
 export const useLogin = () => {
   const router = useRouter();
+
+  const setUser = useAuthStore((state) => state.setUser);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -24,13 +32,32 @@ export const useLogin = () => {
     }
 
     setIsLoading(true);
+
     try {
-      const response = await login({ email: email.trim(), password });
-      sessionStorage.setItem("access_token", response.data.access_token);
-      sessionStorage.setItem("refresh_token", response.data.refresh_token);
+      const response = await login({
+        email: email.trim(),
+        password,
+      });
+
+      const user = response.data.user;
+
+      setAuthSession({
+        token: response.data.token,
+        refreshToken: response.data.refreshToken,
+        user,
+      });
+
+      setUser(user);
+
       router.push("/Dashboard");
-    } catch {
-      setError("Email or password is incorrect.");
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        setError(
+          error.response?.data?.error ?? "Email or password is incorrect.",
+        );
+      } else {
+        setError("Email or password is incorrect.");
+      }
     } finally {
       setIsLoading(false);
     }
