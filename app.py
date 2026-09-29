@@ -10,6 +10,7 @@ load_dotenv()
 from config import Config
 from db import get_db, init_mongo
 from init_db import setup_database
+from routes.analysis_routes import analysis_bp
 from routes.user_routes import auth_bp
 
 
@@ -20,10 +21,11 @@ def create_app(config_class=Config):
 
     init_mongo(app)
     app.register_blueprint(auth_bp)
+    app.register_blueprint(analysis_bp)
 
-    @app.cli.command("init-db")
-    def init_db_command():
-        setup_database(get_db())
+    @app.errorhandler(413)
+    def request_too_large(_error):
+        return jsonify({"error": "File exceeds the 10 MiB upload limit"}), 413
 
     @app.get("/")
     def index():
@@ -43,4 +45,5 @@ def create_app(config_class=Config):
 app = create_app()
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.getenv("PORT", "5000")), debug=True)
+    debug = os.getenv("FLASK_DEBUG", "false").lower() == "true"
+    app.run(host="0.0.0.0", port=int(os.getenv("PORT", "5000")), debug=debug)
