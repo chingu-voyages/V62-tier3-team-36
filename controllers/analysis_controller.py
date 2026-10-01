@@ -11,6 +11,9 @@ from bson.errors import InvalidId
 from db import get_db
 
 REQUIRED_COLUMNS = ("order_id", "order_date", "product", "category", "region", "units", "revenue")
+# Optional columns: older files without them keep working; blank cells are skipped.
+OPTIONAL_TEXT_COLUMNS = ("product_id", "customer_id", "customer_segment")
+OPTIONAL_NUMBER_COLUMNS = ("unit_price", "unit_cost", "profit")
 MAX_ROW_ERRORS = 100
 
 
@@ -89,7 +92,44 @@ def _validate_row(row):
     record["order_date"] = datetime.combine(parsed_date, datetime.min.time(), tzinfo=timezone.utc)
     record["units"] = units
     record["revenue"] = float(revenue)
+    _add_optional_fields(row, record, units, revenue)
     return record
+
+
+def _add_optional_fields(row, record, units, revenue):
+    """Validate the optional columns and add them to the record only when filled in."""
+    for column in OPTIONAL_TEXT_COLUMNS:
+        value = (row.get(column) or "").strip()
+        if not value:
+            continue
+        if len(value) > 255:
+            raise ValueError(f"{column} must be at most 255 characters")
+        record[column] = value
+
+    unit_cost = None
+    for column in OPTIONAL_NUMBER_COLUMNS:
+        value = (row.get(column) or "").strip()
+        if not value:
+            continue
+        try:
+            number = Decimal(value)
+        except InvalidOperation as error:
+            raise ValueError(f"{column} must be a number") from error
+        if not number.is_finite() or not math.isfinite(float(number)):
+            raise ValueError(f"{column} must be a finite number")
+        # profit may be negative (a loss); prices and costs may not.
+        if column != "profit" and number < 0:
+            raise ValueError(f"{column} must be a non-negative number")
+        if column == "unit_cost":
+            unit_cost = number
+        record[column] = float(number)
+
+    # No profit in the file but a unit cost is given: profit = revenue - units * unit_cost.
+    if "profit" not in record and unit_cost is not None:
+        profit = round(float(revenue - units * unit_cost), 2)
+        if not math.isfinite(profit):
+            raise ValueError("profit must be a finite number")
+        record["profit"] = profit
 
 
 def build_summary(records):
@@ -97,9 +137,14 @@ def build_summary(records):
     revenue_by_category = defaultdict(lambda: {"revenue": 0.0, "units": 0})
     revenue_by_region = defaultdict(lambda: {"revenue": 0.0, "units": 0})
     revenue_by_product = defaultdict(lambda: {"revenue": 0.0, "units": 0})
+    revenue_by_segment = defaultdict(lambda: {"revenue": 0.0, "units": 0})
+    revenue_by_customer = defaultdict(lambda: {"revenue": 0.0, "units": 0})
     revenue_by_month = defaultdict(float)
     total_revenue = 0.0
     total_units = 0
+    total_profit = 0.0
+    profit_revenue = 0.0
+    has_profit = False
     order_ids = set()
 
     for record in records:
@@ -115,6 +160,18 @@ def build_summary(records):
         ):
             grouping[key]["revenue"] += revenue
             grouping[key]["units"] += units
+        # Optional columns: only rows that have the value take part in these metrics.
+        for grouping, key in (
+            (revenue_by_segment, record.get("customer_segment")),
+            (revenue_by_customer, record.get("customer_id")),
+        ):
+            if key:
+                grouping[key]["revenue"] += revenue
+                grouping[key]["units"] += units
+        if "profit" in record:
+            has_profit = True
+            total_profit += record["profit"]
+            profit_revenue += revenue
         revenue_by_month[record["order_date"].strftime("%Y-%m")] += revenue
 
     def ranked(grouping, name):
@@ -140,6 +197,15 @@ def build_summary(records):
             {"month": month, "revenue": round(revenue, 2)} for month, revenue in months
         ],
         "top_products": ranked(revenue_by_product, "product")[:10],
+        "revenue_by_segment": ranked(revenue_by_segment, "customer_segment"),
+        "total_customers": len(revenue_by_customer),
+        "top_customers": ranked(revenue_by_customer, "customer_id")[:10],
+        "total_profit": round(total_profit, 2) if has_profit else None,
+        "profit_margin": (
+            round(total_profit / profit_revenue * 100, 2)
+            if has_profit and profit_revenue > 0
+            else None
+        ),
         "generated_at": datetime.now(timezone.utc),
     }
 
