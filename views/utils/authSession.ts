@@ -53,7 +53,7 @@ export const getUserData = (): AuthUser | null => {
     return JSON.parse(rawUser) as AuthUser;
   } catch {
     return null;
-  }
+  }   
 };
 
 export const clearAuthSession = () => {
