@@ -12,9 +12,9 @@ interface Children {
 export default function RootLayout({ children }: Children) {
   return (
     <html lang="en">
-      <body className="min-h-full  flex flex-col">
+      <body className="min-h-full flex flex-col gap-9">
         <Navbar />
-        <div className="">{children}</div>
+        <div>{children}</div>
       </body>
     </html>
   );
