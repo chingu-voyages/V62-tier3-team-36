@@ -1,4 +1,5 @@
 """Shared SQLAlchemy and lazy Supabase clients used by existing branches."""
+"""Shared extensions: DB + lazy Supabase clients."""
 from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
@@ -14,6 +15,7 @@ def _create_client(url, key):
 
 
 def get_supabase_client():
+    """Anon client — used for login/refresh (user scope)."""
     global _supabase_client
     if _supabase_client is None:
         from flask import current_app
@@ -27,6 +29,7 @@ def get_supabase_client():
 
 
 def get_supabase_admin_client():
+    """Service-role client — used for logout revocation."""
     global _supabase_admin_client
     if _supabase_admin_client is None:
         from flask import current_app
@@ -36,6 +39,7 @@ def get_supabase_admin_client():
             current_app.config["SUPABASE_SERVICE_ROLE_KEY"]
             or current_app.config["SUPABASE_ANON_KEY"]
         )
+        key = current_app.config["SUPABASE_SERVICE_ROLE_KEY"] or current_app.config["SUPABASE_ANON_KEY"]
         if not url or not key:
             raise RuntimeError("SUPABASE_URL / service key not configured")
         _supabase_admin_client = _create_client(url, key)
