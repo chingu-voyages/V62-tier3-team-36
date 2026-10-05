@@ -11,8 +11,6 @@ def init_mongo(app):
         serverSelectionTimeoutMS=5000,
         tz_aware=True,
     )
-    """Create one MongoClient for the whole app and its connection pool."""
-    client = MongoClient(app.config["MONGO_URI"], serverSelectionTimeoutMS=5000)
     app.extensions["mongo_client"] = client
     app.extensions["mongo_db"] = client[app.config["MONGO_DB_NAME"]]
 

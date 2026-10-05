@@ -1,5 +1,4 @@
 """Authentication endpoints."""
-"""Auth endpoints: /api/signup, /api/login, /api/logout, /api/refresh, /api/me."""
 from flask import Blueprint, g, jsonify, request
 
 from controllers.user_controller import (
@@ -20,9 +19,6 @@ from schemas.user_schema import (
     SignupSchema,
     validate_request,
 )
-)
-from middlewares import require_auth
-from schemas.user_schema import LoginSchema, RefreshSchema, SignupSchema, validate
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/api")
 
@@ -30,7 +26,6 @@ auth_bp = Blueprint("auth", __name__, url_prefix="/api")
 @auth_bp.post("/signup")
 def signup():
     data, errors = validate_request(SignupSchema, request.get_json(silent=True))
-    data, errors = validate(SignupSchema, request.get_json(silent=True))
     if errors:
         return jsonify({"error": "Invalid request", "details": errors}), 422
     payload, status = create_user(**data)
@@ -40,7 +35,6 @@ def signup():
 @auth_bp.post("/login")
 def login():
     data, errors = validate_request(LoginSchema, request.get_json(silent=True))
-    data, errors = validate(LoginSchema, request.get_json(silent=True))
     if errors:
         return jsonify({"error": "Invalid request", "details": errors}), 422
     payload, status = login_user(data["email"], data["password"])
@@ -79,7 +73,6 @@ def logout():
 @auth_bp.post("/refresh")
 def refresh():
     data, errors = validate_request(RefreshSchema, request.get_json(silent=True))
-    data, errors = validate(RefreshSchema, request.get_json(silent=True))
     if errors:
         return jsonify({"error": "Invalid request", "details": errors}), 422
     payload, status = refresh_session(data["refresh_token"])

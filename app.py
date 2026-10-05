@@ -1,5 +1,5 @@
-from concurrent.futures import ThreadPoolExecutor
 """Flask app factory."""
+from concurrent.futures import ThreadPoolExecutor
 import os
 
 from dotenv import load_dotenv
@@ -13,7 +13,6 @@ from db import get_db, init_mongo
 from init_db import setup_database
 from routes.user_routes import auth_bp
 
-
 INSECURE_SECRET_KEYS = {
     None,
     "",
@@ -22,6 +21,7 @@ INSECURE_SECRET_KEYS = {
 }
 
 from routes.password_reset_routes import password_reset_bp
+
 
 def create_app(config_class=Config):
     app = Flask(__name__)
@@ -42,20 +42,13 @@ def create_app(config_class=Config):
         app.extensions["password_reset_executor"] = ThreadPoolExecutor(
             max_workers=2, thread_name_prefix="password-reset"
         )
+
     app.register_blueprint(auth_bp)
-
-    @app.cli.command("init-db")
-    def init_db_command():
-        """Create or update MongoDB validators and indexes."""
-    CORS(app, origins=[app.config["FRONTEND_URL"]], supports_credentials=False)
-
-    init_mongo(app)
-    app.register_blueprint(auth_bp)
-
     app.register_blueprint(password_reset_bp)
 
     @app.cli.command("init-db")
     def init_db_command():
+        """Create or update MongoDB validators and indexes."""
         setup_database(get_db())
 
     @app.get("/")
@@ -65,7 +58,6 @@ def create_app(config_class=Config):
             "<p>Your backend service is running.</p>"
             "<p><a href='/health'>Check service health</a></p></main>"
         )
-        return "<main><h1>Welcome to Our Platform Backend</h1><p>Your backend service is running.</p><p><a href='/health'>Check service health</a></p></main>"
 
     @app.get("/health")
     def health():
@@ -83,4 +75,3 @@ app = create_app()
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.getenv("PORT", "5000")), debug=True)
-

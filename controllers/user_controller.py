@@ -24,19 +24,6 @@ INVALID_RESET_TOKEN_RESPONSE = {"error": "Invalid or expired password reset toke
 
 
 def create_user(full_name, organisation_name, email, password):
-"""Authentication logic backed by MongoDB."""
-from datetime import datetime, timedelta, timezone
-
-import jwt
-from pymongo.errors import DuplicateKeyError
-from bson import ObjectId
-from flask import current_app
-from werkzeug.security import check_password_hash, generate_password_hash
-
-from db import get_db
-
-
-def create_user(full_name, organisation_name, email, password, role):
     """Create a MongoDB user with a one-way password hash."""
     user = {
         "full_name": full_name.strip(),
@@ -45,7 +32,6 @@ def create_user(full_name, organisation_name, email, password, role):
         "password_hash": generate_password_hash(password),
         "role": "VIEWER",
         "session_version": 0,
-        "role": role,
         "created_at": datetime.now(timezone.utc),
     }
     try:
@@ -86,10 +72,6 @@ def _create_session_token(user, token_type, expires_in):
             "iat": now,
             "exp": now + expires_in,
         },
-def _create_token(user_id, token_type, expires_in):
-    now = datetime.now(timezone.utc)
-    return jwt.encode(
-        {"sub": str(user_id), "type": token_type, "iat": now, "exp": now + expires_in},
         current_app.config["SECRET_KEY"],
         algorithm="HS256",
     )
@@ -99,15 +81,12 @@ def _session_payload(user):
     return {
         "access_token": _create_session_token(user, "access", timedelta(hours=1)),
         "refresh_token": _create_session_token(user, "refresh", timedelta(days=30)),
-        "access_token": _create_token(user["_id"], "access", timedelta(hours=1)),
-        "refresh_token": _create_token(user["_id"], "refresh", timedelta(days=30)),
         "user": _user_payload(user),
     }
 
 
 def login_user(email, password):
-    """Return a session while using a generic 401 to prevent enumeration."""
-    """Returns (payload, status). Generic 401 to avoid user enumeration."""
+    """Return a session while using a generic 401 to prevent user enumeration."""
     email = (email or "").strip().lower()
     if not email or not password:
         return {"error": "Email and password are required"}, 422
@@ -115,7 +94,6 @@ def login_user(email, password):
     if not user or not check_password_hash(user["password_hash"], password):
         return {"error": "Invalid credentials"}, 401
     return _session_payload(user), 200
-
 
 
 def logout_user(token):
@@ -132,15 +110,12 @@ def refresh_session(refresh_token):
             current_app.config["SECRET_KEY"],
             algorithms=["HS256"],
         )
-        claims = jwt.decode(refresh_token, current_app.config["SECRET_KEY"], algorithms=["HS256"])
         if claims.get("type") != "refresh":
             raise jwt.InvalidTokenError
         user = get_db().users.find_one({"_id": ObjectId(claims["sub"])})
     except (jwt.InvalidTokenError, TypeError, ValueError):
         return {"error": "Session expired"}, 401
-    if user is None:
-        return {"error": "Session expired"}, 401
-    if claims.get("sv", 0) != user.get("session_version", 0):
+    if user is None or claims.get("sv", 0) != user.get("session_version", 0):
         return {"error": "Session expired"}, 401
     return _session_payload(user), 200
 
@@ -175,8 +150,6 @@ def _process_password_reset(email):
         minutes=current_app.config["RESET_TOKEN_TTL_MINUTES"]
     )
 
-    # Claim the per-user cooldown atomically. The lock document uses the user id
-    # as its MongoDB _id, so concurrent upserts cannot both succeed.
     try:
         database.password_reset_locks.find_one_and_update(
             {
