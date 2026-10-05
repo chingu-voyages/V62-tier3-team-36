@@ -3,9 +3,11 @@
 import Link from "next/dist/client/link";
 
 import { useUploadCSV } from "./hooks/useUploadCSV";
+import { ErrorCSCModal } from "../Modals/ErrorCSCModal";
+import { ErrorUploadFileModal } from "../Modals/UploadFileErrorModal";
 
 const UploadCSVPage = () => {
-  const { fileInputRef, handleChooseFile, handleFileChange } = useUploadCSV();
+  const {isModalOpen,setIsModalOpen ,fileInputRef, handleChooseFile, handleFileChange,csvFile,fileSize,fileName,isLoading,error } = useUploadCSV();
 
   return (
     <div className="flex items-center justify-center">
@@ -28,35 +30,41 @@ const UploadCSVPage = () => {
                 Upload history
               </Link>
             </div>
-
+            {isModalOpen && <ErrorUploadFileModal error={error} onClose={()=>setIsModalOpen(false)}/>}
             <div className="border-[1.6px] border-dashed border-[var(--gray-700)] bg-[var(--gray-100)] my-[18px] px-6">
               <div className="flex min-h-[272px] flex-col items-center justify-center">
-                <div className="mb-4 h-[61px] w-[62px] border-[1.6px] border-[var(--gray-700)] bg-[var(--gray-300)]" />
+                <label className="relative flex flex-col items-center justify-center">
+                  <div className="mb-4 h-[61px] w-[62px] border-[1.6px] border-[var(--gray-700)] bg-[var(--gray-300)]" />
 
-                <p className="text-lg font-bold">Drop your CSV here</p>
+                  <p className="text-lg font-bold">Click or Drop your CSV here</p>
 
-                <p className="mt-2 text-[13px] text-[var(--dark-gray)]">
-                  Maximum 25 MB · Required columns shown below
-                </p>
-
-                <>
+                  <p className="mt-2 text-[13px] text-[var(--dark-gray)]">
+                    Maximum 25 MB · Required columns shown below
+                  </p>
                   <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".csv,.xlsx,.xls"
-                    className="hidden"
-                    onChange={handleFileChange}
-                  />
-
+                      type="file"
+                      
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
+                      onChange={handleFileChange}
+                    />
+                  </label>
+                <>
+                  
                   <button
                     type="button"
                     onClick={handleChooseFile}
                     className="mt-[18px] w-full max-w-[760px] h-[38px] cursor-pointer border-[1.6px] border-[var(--gray-700)] bg-[var(--gray-400)] text-sm font-bold transition hover:bg-[var(--gray-300)]"
                   >
-                    Choose file
+                    Continue
                   </button>
                 </>
               </div>
+            </div>
+            <div className="flex p-[14px] flex-col space-y-3">
+                {csvFile?<div>
+                    <p className=" text-[13px] text-[var(--dark-gray)]">{fileName}</p>
+                    <p className=" text-[13px] text-[var(--dark-gray)]">{fileSize} size</p>
+                </div>:null}
             </div>
           </div>
         </div>
