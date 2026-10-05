@@ -1,8 +1,16 @@
+"""MongoDB client initialization and request-safe database access."""
 from flask import current_app
 from pymongo import MongoClient
 
 
 def init_mongo(app):
+    """Create one MongoClient and connection pool for the Flask app."""
+    client_class = app.config.get("MONGO_CLIENT_CLASS", MongoClient)
+    client = client_class(
+        app.config["MONGO_URI"],
+        serverSelectionTimeoutMS=5000,
+        tz_aware=True,
+    )
     """Create one MongoClient for the whole app and its connection pool."""
     client = MongoClient(app.config["MONGO_URI"], serverSelectionTimeoutMS=5000)
     app.extensions["mongo_client"] = client
@@ -10,5 +18,6 @@ def init_mongo(app):
 
 
 def get_db():
-    """Use inside routes and services: db = get_db()."""
+    """Return the configured MongoDB database inside an app context."""
     return current_app.extensions["mongo_db"]
+    

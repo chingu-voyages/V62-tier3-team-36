@@ -1,3 +1,19 @@
+"""Request validation schemas for authentication endpoints."""
+from marshmallow import Schema, fields, validate
+
+
+class ForgotPasswordSchema(Schema):
+    email = fields.Email(required=True)
+
+
+class ResetPasswordSchema(Schema):
+    token = fields.Str(required=True, validate=validate.Length(min=32, max=256))
+    password = fields.Str(
+        required=True,
+        validate=validate.Length(min=8, max=128),
+    )
+
+
 """Request validation for authentication endpoints."""
 from marshmallow import Schema, fields, validate
 
@@ -9,6 +25,11 @@ class LoginSchema(Schema):
 
 class SignupSchema(Schema):
     full_name = fields.Str(required=True, validate=validate.Length(min=1, max=120))
+    organisation_name = fields.Str(
+        required=True, validate=validate.Length(min=1, max=120)
+    )
+    email = fields.Email(required=True)
+    password = fields.Str(required=True, validate=validate.Length(min=8, max=128))
     organisation_name = fields.Str(required=True, validate=validate.Length(min=1, max=120))
     email = fields.Email(required=True)
     password = fields.Str(required=True, validate=validate.Length(min=8))
@@ -19,6 +40,8 @@ class RefreshSchema(Schema):
     refresh_token = fields.Str(required=True, validate=validate.Length(min=1))
 
 
+def validate_request(schema_class, payload):
+    schema = schema_class()
 def validate(schema_cls, payload):
     schema = schema_cls()
     errors = schema.validate(payload or {})

@@ -1,3 +1,4 @@
+"""Shared SQLAlchemy and lazy Supabase clients used by existing branches."""
 """Shared extensions: DB + lazy Supabase clients."""
 from flask_sqlalchemy import SQLAlchemy
 
@@ -34,6 +35,10 @@ def get_supabase_admin_client():
         from flask import current_app
 
         url = current_app.config["SUPABASE_URL"]
+        key = (
+            current_app.config["SUPABASE_SERVICE_ROLE_KEY"]
+            or current_app.config["SUPABASE_ANON_KEY"]
+        )
         key = current_app.config["SUPABASE_SERVICE_ROLE_KEY"] or current_app.config["SUPABASE_ANON_KEY"]
         if not url or not key:
             raise RuntimeError("SUPABASE_URL / service key not configured")
