@@ -7,7 +7,7 @@ type CommentPops={
     start_name:string
 }
 
-const CommentCard = ({isblack,comment,full_name,start_name}:CommentProps) => {
+const CommentCard = ({isblack,comment,full_name,start_name}:CommentPops) => {
   
   return (
     <div className={`flex max-w-[350px] flex-col col-span-1 ${isblack?"bg-[#202020]":"bg-white"} space-y-5 rounded-xl p-5 hover:scale-105 hover:shadow-xl`}>
