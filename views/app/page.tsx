@@ -1,10 +1,9 @@
+import Main from "@/components/Main/main"
 
 
  const Home = ()=>{
   return (
-    <div>
-      
-    </div>
+    <Main/>
   )
 }
 export default Home
