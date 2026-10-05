@@ -9,6 +9,7 @@ load_dotenv(".env")
 
 
 class Config:
+    SECRET_KEY = os.getenv("SECRET_KEY") or os.urandom(32)
     SECRET_KEY = os.getenv("SECRET_KEY")
     MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
     MONGO_DB_NAME = os.getenv("MONGO_DB_NAME", "sales_dashboard")
@@ -34,6 +35,7 @@ class Config:
     SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret")
     MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
     MONGO_DB_NAME = os.getenv("MONGO_DB_NAME", "sales_dashboard")
+    MAX_CONTENT_LENGTH = 10 * 1024 * 1024
 
     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "sqlite:///dev.db")
     SQLALCHEMY_TRACK_MODIFICATIONS = False

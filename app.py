@@ -11,6 +11,7 @@ load_dotenv(".env")
 from config import Config
 from db import get_db, init_mongo
 from init_db import setup_database
+from routes.analysis_routes import analysis_bp
 from routes.user_routes import auth_bp
 
 INSECURE_SECRET_KEYS = {
@@ -44,6 +45,11 @@ def create_app(config_class=Config):
         )
 
     app.register_blueprint(auth_bp)
+    app.register_blueprint(analysis_bp)
+
+    @app.errorhandler(413)
+    def request_too_large(_error):
+        return jsonify({"error": "File exceeds the 10 MiB upload limit"}), 413
     app.register_blueprint(password_reset_bp)
 
     @app.cli.command("init-db")
@@ -74,4 +80,5 @@ app = create_app()
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.getenv("PORT", "5000")), debug=True)
+    debug = os.getenv("FLASK_DEBUG", "false").lower() == "true"
+    app.run(host="0.0.0.0", port=int(os.getenv("PORT", "5000")), debug=debug)

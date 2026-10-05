@@ -106,6 +106,13 @@ SALES_RECORDS = {
         "region": {"bsonType": "string"},
         "units": {"bsonType": "int", "minimum": 0},
         "revenue": {"bsonType": ["double", "int", "decimal"], "minimum": 0},
+        # Optional: only present when the uploaded file has these columns filled in.
+        "product_id": {"bsonType": "string"},
+        "customer_id": {"bsonType": "string"},
+        "customer_segment": {"bsonType": "string"},
+        "unit_price": {"bsonType": ["double", "int", "decimal"], "minimum": 0},
+        "unit_cost": {"bsonType": ["double", "int", "decimal"], "minimum": 0},
+        "profit": {"bsonType": ["double", "int", "decimal"]},
     },
 }
 
@@ -133,6 +140,11 @@ ANALYSIS_SUMMARIES = {
         "revenue_by_region": {"bsonType": "array"},
         "revenue_trend": {"bsonType": "array"},
         "top_products": {"bsonType": "array"},
+        "revenue_by_segment": {"bsonType": "array"},
+        "total_customers": {"bsonType": "int"},
+        "top_customers": {"bsonType": "array"},
+        "total_profit": {"bsonType": ["double", "int", "decimal", "null"]},
+        "profit_margin": {"bsonType": ["double", "int", "decimal", "null"]},
         "generated_at": {"bsonType": "date"},
     },
 }
