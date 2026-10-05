@@ -8,7 +8,7 @@ const Navbar = () => {
   const { user, handleLogout } = useNavbar();
 
   return (
-    <div className="sticky top-0 flex h-[50px] w-full flex-row items-center justify-between bg-[#EDEDED]/85 p-4">
+    <div className="sticky top-0 flex h-[50px] w-full flex-row items-center justify-between bg-[#EDEDED]/85 p-4 z-50">
       <div className="text-lg font-bold">Logo</div>
 
       <div className="flex flex-row gap-2">
