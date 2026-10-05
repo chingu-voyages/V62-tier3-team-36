@@ -1,3 +1,12 @@
+"""Authentication guard for application JWTs."""
+from functools import wraps
+
+import jwt
+from bson import ObjectId
+from flask import current_app, g, jsonify, request
+
+from db import get_db
+
 """Auth guard: verifies application JWTs, attaches user to `flask.g`."""
 from functools import wraps
 
@@ -31,6 +40,17 @@ def require_auth(fn):
             return jsonify({"error": "Unauthorized"}), 401
         if claims.get("type") != "access":
             return jsonify({"error": "Unauthorized"}), 401
+
+        user_id = claims.get("sub")
+        try:
+            user = get_db().users.find_one({"_id": ObjectId(user_id)})
+        except (TypeError, ValueError):
+            user = None
+        if user is None or claims.get("sv", 0) != user.get("session_version", 0):
+            return jsonify({"error": "Session expired"}), 401
+
+        g.user_id = user_id
+        g.token = token
         g.user_id = claims.get("sub")
         g.token = token
         if not g.user_id:

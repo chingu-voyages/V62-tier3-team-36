@@ -1,4 +1,4 @@
-"""Auth endpoints: /api/signup, /api/login, /api/logout, /api/refresh, /api/me."""
+"""Authentication endpoints."""
 from flask import Blueprint, g, jsonify, request
 
 from controllers.user_controller import (
@@ -7,16 +7,25 @@ from controllers.user_controller import (
     login_user,
     logout_user,
     refresh_session,
+    request_password_reset,
+    reset_user_password,
 )
 from middlewares import require_auth
-from schemas.user_schema import LoginSchema, RefreshSchema, SignupSchema, validate
+from schemas.user_schema import (
+    ForgotPasswordSchema,
+    LoginSchema,
+    RefreshSchema,
+    ResetPasswordSchema,
+    SignupSchema,
+    validate_request,
+)
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/api")
 
 
 @auth_bp.post("/signup")
 def signup():
-    data, errors = validate(SignupSchema, request.get_json(silent=True))
+    data, errors = validate_request(SignupSchema, request.get_json(silent=True))
     if errors:
         return jsonify({"error": "Invalid request", "details": errors}), 422
     payload, status = create_user(**data)
@@ -25,10 +34,32 @@ def signup():
 
 @auth_bp.post("/login")
 def login():
-    data, errors = validate(LoginSchema, request.get_json(silent=True))
+    data, errors = validate_request(LoginSchema, request.get_json(silent=True))
     if errors:
         return jsonify({"error": "Invalid request", "details": errors}), 422
     payload, status = login_user(data["email"], data["password"])
+    return jsonify(payload), status
+
+
+@auth_bp.post("/forgot_password")
+def forgot_password():
+    data, errors = validate_request(
+        ForgotPasswordSchema, request.get_json(silent=True)
+    )
+    if errors:
+        return jsonify({"error": "Invalid request", "details": errors}), 422
+    payload, status = request_password_reset(data["email"])
+    return jsonify(payload), status
+
+
+@auth_bp.post("/reset_password")
+def reset_password():
+    data, errors = validate_request(
+        ResetPasswordSchema, request.get_json(silent=True)
+    )
+    if errors:
+        return jsonify({"error": "Invalid request", "details": errors}), 422
+    payload, status = reset_user_password(data["token"], data["password"])
     return jsonify(payload), status
 
 
@@ -41,7 +72,7 @@ def logout():
 
 @auth_bp.post("/refresh")
 def refresh():
-    data, errors = validate(RefreshSchema, request.get_json(silent=True))
+    data, errors = validate_request(RefreshSchema, request.get_json(silent=True))
     if errors:
         return jsonify({"error": "Invalid request", "details": errors}), 422
     payload, status = refresh_session(data["refresh_token"])

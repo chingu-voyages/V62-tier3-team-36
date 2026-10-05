@@ -1,6 +1,15 @@
 # MacOS-specific files
 .DS_Store
 .env
+.env.local
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+instance/
+.env 
+venv/
+views/.next/
 __pycache__/
 *.py[cod]
 instance/
