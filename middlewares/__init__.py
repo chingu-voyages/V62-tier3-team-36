@@ -7,6 +7,12 @@ from flask import current_app, g, jsonify, request
 
 from db import get_db
 
+"""Auth guard: verifies application JWTs, attaches user to `flask.g`."""
+from functools import wraps
+
+import jwt
+from flask import current_app, g, jsonify, request
+
 
 def _decode(token):
     return jwt.decode(token, current_app.config["SECRET_KEY"], algorithms=["HS256"])
@@ -45,6 +51,10 @@ def require_auth(fn):
 
         g.user_id = user_id
         g.token = token
+        g.user_id = claims.get("sub")
+        g.token = token
+        if not g.user_id:
+            return jsonify({"error": "Unauthorized"}), 401
         return fn(*args, **kwargs)
 
     return wrapper

@@ -7,4 +7,11 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 instance/
+.env 
+venv/
 views/.next/
+__pycache__/
+*.py[cod]
+instance/
+.env 
+venv/

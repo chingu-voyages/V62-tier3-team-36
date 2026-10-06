@@ -1,4 +1,4 @@
-"""Flask application factory for the Sales Dashboard API."""
+"""Flask app factory."""
 from concurrent.futures import ThreadPoolExecutor
 import os
 
@@ -6,14 +6,13 @@ from dotenv import load_dotenv
 from flask import Flask, jsonify
 from flask_cors import CORS
 
-load_dotenv(".env.local")
-load_dotenv()
+load_dotenv(".env")
 
 from config import Config
 from db import get_db, init_mongo
 from init_db import setup_database
+from routes.analysis_routes import analysis_bp
 from routes.user_routes import auth_bp
-
 
 INSECURE_SECRET_KEYS = {
     None,
@@ -21,6 +20,8 @@ INSECURE_SECRET_KEYS = {
     "dev-secret-change-me",
     "replace-with-a-long-random-secret",
 }
+
+from routes.password_reset_routes import password_reset_bp
 
 
 def create_app(config_class=Config):
@@ -42,7 +43,14 @@ def create_app(config_class=Config):
         app.extensions["password_reset_executor"] = ThreadPoolExecutor(
             max_workers=2, thread_name_prefix="password-reset"
         )
+
     app.register_blueprint(auth_bp)
+    app.register_blueprint(analysis_bp)
+
+    @app.errorhandler(413)
+    def request_too_large(_error):
+        return jsonify({"error": "File exceeds the 10 MiB upload limit"}), 413
+    app.register_blueprint(password_reset_bp)
 
     @app.cli.command("init-db")
     def init_db_command():
@@ -72,4 +80,5 @@ app = create_app()
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.getenv("PORT", "5000")), debug=True)
+    debug = os.getenv("FLASK_DEBUG", "false").lower() == "true"
+    app.run(host="0.0.0.0", port=int(os.getenv("PORT", "5000")), debug=debug)

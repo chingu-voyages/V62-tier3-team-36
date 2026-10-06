@@ -18,3 +18,4 @@ def init_mongo(app):
 def get_db():
     """Return the configured MongoDB database inside an app context."""
     return current_app.extensions["mongo_db"]
+    

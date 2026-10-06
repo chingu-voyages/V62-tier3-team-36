@@ -4,6 +4,14 @@ Safe to run multiple times with: ``flask --app app init-db``.
 """
 from pymongo import ASCENDING, DESCENDING, MongoClient
 from pymongo.errors import CollectionInvalid, OperationFailure
+"""
+Creates MongoDB collections with JSON Schema validation and indexes.
+Safe to run multiple times.
+
+Run: python init_db.py or flask --app app init-db
+"""
+from pymongo import ASCENDING, DESCENDING, MongoClient
+from pymongo.errors import CollectionInvalid
 
 from config import Config
 
@@ -17,6 +25,7 @@ USERS = {
         "role",
         "created_at",
     ],
+    "required": ["full_name", "organisation_name", "email", "password_hash", "role", "created_at"],
     "properties": {
         "full_name": {"bsonType": "string"},
         "organisation_name": {"bsonType": "string"},
@@ -47,6 +56,7 @@ PASSWORD_RESET_LOCKS = {
     "properties": {
         "requested_at": {"bsonType": "date"},
         "expires_at": {"bsonType": "date"},
+        "created_at": {"bsonType": "date"},
     },
 }
 
@@ -60,6 +70,7 @@ CSV_UPLOADS = {
         "invalid_rows",
         "uploaded_at",
     ],
+    "required": ["user_id", "file_name", "status", "valid_rows", "invalid_rows", "uploaded_at"],
     "properties": {
         "user_id": {"bsonType": "objectId"},
         "file_name": {"bsonType": "string"},
@@ -82,6 +93,8 @@ SALES_RECORDS = {
         "region",
         "units",
         "revenue",
+        "user_id", "csv_upload_id", "order_id", "order_date",
+        "product", "category", "region", "units", "revenue",
     ],
     "properties": {
         "user_id": {"bsonType": "objectId"},
@@ -93,6 +106,13 @@ SALES_RECORDS = {
         "region": {"bsonType": "string"},
         "units": {"bsonType": "int", "minimum": 0},
         "revenue": {"bsonType": ["double", "int", "decimal"], "minimum": 0},
+        # Optional: only present when the uploaded file has these columns filled in.
+        "product_id": {"bsonType": "string"},
+        "customer_id": {"bsonType": "string"},
+        "customer_segment": {"bsonType": "string"},
+        "unit_price": {"bsonType": ["double", "int", "decimal"], "minimum": 0},
+        "unit_cost": {"bsonType": ["double", "int", "decimal"], "minimum": 0},
+        "profit": {"bsonType": ["double", "int", "decimal"]},
     },
 }
 
@@ -106,6 +126,8 @@ ANALYSIS_SUMMARIES = {
         "aov",
         "growth",
         "generated_at",
+        "user_id", "csv_upload_id", "total_revenue", "total_units",
+        "aov", "growth", "generated_at",
     ],
     "properties": {
         "user_id": {"bsonType": "objectId"},
@@ -118,6 +140,11 @@ ANALYSIS_SUMMARIES = {
         "revenue_by_region": {"bsonType": "array"},
         "revenue_trend": {"bsonType": "array"},
         "top_products": {"bsonType": "array"},
+        "revenue_by_segment": {"bsonType": "array"},
+        "total_customers": {"bsonType": "int"},
+        "top_customers": {"bsonType": "array"},
+        "total_profit": {"bsonType": ["double", "int", "decimal", "null"]},
+        "profit_margin": {"bsonType": ["double", "int", "decimal", "null"]},
         "generated_at": {"bsonType": "date"},
     },
 }
@@ -147,6 +174,8 @@ def _ensure_collection(db, name, schema):
             # Application users normally have readWrite rather than dbAdmin.
             # Existing validators can remain unchanged; indexes are still applied.
             print(f"  validator unchanged (insufficient dbAdmin permission): {name}")
+        db.command("collMod", name, validator=validator)
+        print(f"  updated validator:  {name}")
 
 
 def _create_indexes(db):
@@ -162,10 +191,14 @@ def _create_indexes(db):
     )
 
     db.csv_uploads.create_index([("user_id", ASCENDING), ("uploaded_at", DESCENDING)])
+    db.csv_uploads.create_index([("user_id", ASCENDING), ("uploaded_at", DESCENDING)])
+
     db.sales_records.create_index([("csv_upload_id", ASCENDING)])
     db.sales_records.create_index([("user_id", ASCENDING), ("order_date", ASCENDING)])
     db.sales_records.create_index([("user_id", ASCENDING), ("category", ASCENDING)])
     db.sales_records.create_index([("user_id", ASCENDING), ("region", ASCENDING)])
+
+    # MongoDB has no foreign keys; related documents need manual cascading deletes.
     db.analysis_summaries.create_index([("csv_upload_id", ASCENDING)], unique=True)
     db.analysis_summaries.create_index([("user_id", ASCENDING)])
     print("  indexes ready")
@@ -181,4 +214,6 @@ def setup_database(db):
 
 if __name__ == "__main__":
     client = MongoClient(Config.MONGO_URI, serverSelectionTimeoutMS=5000, tz_aware=True)
+    setup_database(client[Config.MONGO_DB_NAME])
+    client = MongoClient(Config.MONGO_URI, serverSelectionTimeoutMS=5000)
     setup_database(client[Config.MONGO_DB_NAME])

@@ -3,6 +3,7 @@
 Authentication in the deployed application uses MongoDB. These models are kept
 for compatibility with older branches and do not store password-reset tokens.
 """
+"""DB models. Auth truth lives in Supabase; here is only the profile mirror."""
 from datetime import datetime, timezone
 
 from extensions import db
@@ -25,6 +26,14 @@ class UserProfile(db.Model):
     organisation_id = db.Column(
         db.String(36), db.ForeignKey("organisations.id"), nullable=True
     )
+    """One row per Supabase user (created at US-01 registration). No passwords."""
+
+    __tablename__ = "user_profiles"
+
+    id = db.Column(db.String(36), primary_key=True)  # = supabase user uuid
+    email = db.Column(db.String(255), unique=True, nullable=False, index=True)
+    full_name = db.Column(db.String(120), nullable=False)
+    organisation_id = db.Column(db.String(36), db.ForeignKey("organisations.id"), nullable=True)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     organisation = db.relationship("Organisation", lazy="joined")

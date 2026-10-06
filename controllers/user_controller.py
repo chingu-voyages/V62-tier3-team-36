@@ -86,7 +86,7 @@ def _session_payload(user):
 
 
 def login_user(email, password):
-    """Return a session while using a generic 401 to prevent enumeration."""
+    """Return a session while using a generic 401 to prevent user enumeration."""
     email = (email or "").strip().lower()
     if not email or not password:
         return {"error": "Email and password are required"}, 422
@@ -96,7 +96,7 @@ def login_user(email, password):
     return _session_payload(user), 200
 
 
-def logout_user(_token):
+def logout_user(token):
     """JWT logout is handled client-side by discarding the token."""
     return {"message": "Logged out"}, 200
 
@@ -115,9 +115,7 @@ def refresh_session(refresh_token):
         user = get_db().users.find_one({"_id": ObjectId(claims["sub"])})
     except (jwt.InvalidTokenError, TypeError, ValueError):
         return {"error": "Session expired"}, 401
-    if user is None:
-        return {"error": "Session expired"}, 401
-    if claims.get("sv", 0) != user.get("session_version", 0):
+    if user is None or claims.get("sv", 0) != user.get("session_version", 0):
         return {"error": "Session expired"}, 401
     return _session_payload(user), 200
 
@@ -152,8 +150,6 @@ def _process_password_reset(email):
         minutes=current_app.config["RESET_TOKEN_TTL_MINUTES"]
     )
 
-    # Claim the per-user cooldown atomically. The lock document uses the user id
-    # as its MongoDB _id, so concurrent upserts cannot both succeed.
     try:
         database.password_reset_locks.find_one_and_update(
             {
