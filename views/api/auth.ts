@@ -1,4 +1,4 @@
-import axios from "axios";
+import { authApi } from "./axios";
 
 interface Register {
   full_name: string;
@@ -21,23 +21,14 @@ interface ForgotPassword {
   email: string;
 }
 
-const api = axios.create({
-  baseURL:
-    process.env.NEXT_PUBLIC_BACKEND_URL ?? "https://v62-tier3-team-36.onrender.com",
-  headers: {
-    Accept: "application/json",
-    "Content-Type": "application/json",
-  },
-});
-
 export const register = ({ full_name, organisation_name, email, password }: Register) =>
-  api.post("/api/signup", { full_name, organisation_name, email, password });
+  authApi.post("/api/signup", { full_name, organisation_name, email, password });
 
 export const login = ({ email, password }: Login) =>
-  api.post("/api/login", { email, password });
+  authApi.post("/api/login", { email, password });
 
 export const forgot_password = ({ email }: ForgotPassword) =>
-  api.post("/api/forgot_password", { email });
+  authApi.post("/api/forgot_password", { email });
 
 export const reset_password = ({ token, password }: ResetPassword) =>
-  api.post("/api/reset_password", { token, password });
+  authApi.post("/api/reset_password", { token, password });

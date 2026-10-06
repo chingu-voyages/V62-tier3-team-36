@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 
 import { NoDataModal } from "../Modals/NoDataModal";
+import { get_list_csv } from "@/api/analysis";
 
 type UploadedFile = {
   id: string;
@@ -13,8 +14,6 @@ type UploadedFile = {
   updatedAt: string;
   rows: number;
 };
-
-const mockFiles: UploadedFile[] = [];
 
 const DashboardSkeleton = () => (
   <div className="px-5 pb-10 pt-5 bg-[var(--white)]">
@@ -39,16 +38,25 @@ const DashboardSkeleton = () => (
 const Page = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+  console.log("🚀 ~ Page ~ uploadedFiles:", uploadedFiles);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setUploadedFiles(mockFiles);
-      setIsLoading(false);
-      setIsModalOpen(mockFiles.length === 0);
-    }, 800);
+    const loadFiles = async () => {
+      try {
+        const response = await get_list_csv();
+        const files = response.data;
 
-    return () => clearTimeout(timer);
+        setUploadedFiles(files);
+        setIsModalOpen(files.length === 0);
+      } catch (error) {
+        console.error("Failed to load uploaded files:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadFiles();
   }, []);
 
   if (isLoading) {
