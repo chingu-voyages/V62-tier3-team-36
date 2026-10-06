@@ -1,11 +1,9 @@
-import { analysisApi } from "./axios";
+import { api } from "./axios";
+
+export const upload_csv = (data: FormData) => {
+  return api.post("/api/analysis/uploads", data);
+};
 
 export const get_list_csv = () => {
-  const token = localStorage.getItem("access_token");
-
-  return analysisApi.get("/api/analysis/uploads", {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  return api.get("/api/analysis/uploads");
 };

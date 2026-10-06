@@ -1,8 +1,9 @@
 "use client";
 
+import { useAuthStore } from "@/store/authStore";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 const NAV_ITEMS = [
   { href: "/", label: "Home" },
@@ -13,40 +14,15 @@ const NAV_ITEMS = [
 ];
 
 const BACKEND_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:5000";
-
-type SessionUser = {
-  full_name?: string;
-  email?: string;
-};
+  process.env.NEXT_PUBLIC_BACKEND_URL ??
+  "https://v62-tier3-team-36.onrender.com";
 
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [user, setUser] = useState<SessionUser | null>(null);
-
-  useEffect(() => {
-    const token = localStorage.getItem("access_token");
-    if (!token) {
-      return;
-    }
-    let cancelled = false;
-    fetch(`${BACKEND_URL}/api/me`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (!cancelled) setUser(data ?? null);
-      })
-      .catch(() => {
-        if (!cancelled) setUser(null);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [pathname]);
+  const user = useAuthStore((state) => state.user);
 
   async function handleLogout() {
     const token = localStorage.getItem("access_token");
@@ -58,7 +34,7 @@ export default function Sidebar() {
     }
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
-    setUser(null);
+    useAuthStore.getState().setUser(null);
     setMobileOpen(false);
     router.push("/login");
   }
@@ -108,7 +84,7 @@ export default function Sidebar() {
           </ul>
           <div className="flex items-center justify-between py-2">
             <span className="truncate text-xs text-zinc-600 dark:text-zinc-400">
-              {user?.email ?? user?.full_name ?? "Not signed in"}
+              {user?.full_name ?? user?.email ?? "Not signed in"}
             </span>
             {user && (
               <button
@@ -166,7 +142,7 @@ export default function Sidebar() {
         <div className="border-t border-black/[.08] p-3 dark:border-white/[.145]">
           {showLabels && (
             <p className="mb-2 truncate text-xs text-zinc-600 dark:text-zinc-400">
-              {user?.email ?? user?.full_name ?? "Not signed in"}
+              {user?.full_name ?? user?.email ?? "Not signed in"}
             </p>
           )}
           {user ? (

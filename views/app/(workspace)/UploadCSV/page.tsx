@@ -11,10 +11,12 @@ const UploadCSVPage = () => {
     setIsModalOpen,
     handleChooseFile,
     handleFileChange,
+    fileInputRef,
     csvFile,
     fileSize,
     fileName,
     error,
+    isUploading,
   } = useUploadCSV();
 
   return (
@@ -57,6 +59,7 @@ const UploadCSVPage = () => {
                     Maximum 25 MB · Required columns shown below
                   </p>
                   <input
+                    ref={fileInputRef}
                     type="file"
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                     onChange={handleFileChange}
@@ -66,9 +69,14 @@ const UploadCSVPage = () => {
                   <button
                     type="button"
                     onClick={handleChooseFile}
+                    disabled={isUploading}
                     className="mt-[18px] w-full max-w-[760px] h-[38px] cursor-pointer border-[1.6px] border-[var(--gray-700)] bg-[var(--gray-400)] text-sm font-bold transition hover:bg-[var(--gray-300)]"
                   >
-                    Continue
+                    {isUploading
+                      ? "Uploading..."
+                      : csvFile
+                        ? "Upload File"
+                        : "Choose File"}
                   </button>
                 </>
               </div>

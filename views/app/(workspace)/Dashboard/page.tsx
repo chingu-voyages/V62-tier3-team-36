@@ -9,10 +9,10 @@ import { get_list_csv } from "@/api/analysis";
 
 type UploadedFile = {
   id: string;
-  name: string;
+  file_name: string;
   status: string;
-  updatedAt: string;
-  rows: number;
+  uploaded_at: string;
+  invalid_rows: number;
 };
 
 const DashboardSkeleton = () => (
@@ -38,14 +38,13 @@ const DashboardSkeleton = () => (
 const Page = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
-  console.log("🚀 ~ Page ~ uploadedFiles:", uploadedFiles);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     const loadFiles = async () => {
       try {
         const response = await get_list_csv();
-        const files = response.data;
+        const files = response.data.uploads;
 
         setUploadedFiles(files);
         setIsModalOpen(files.length === 0);
@@ -129,31 +128,37 @@ const Page = () => {
             <div className="grid grid-cols-[2fr_1fr_1.4fr_1fr] gap-2 border-b border-[var(--gray-400)] bg-[var(--gray-300)] px-[10px] py-[6px] font-extrabold">
               <p>Name</p>
               <p>Status</p>
-              <p>Updated</p>
-              <p>Rows</p>
+              <p className="text-center">Uploaded</p>
+              <p className="text-center">Rows</p>
             </div>
 
-            {uploadedFiles.map((file, index) => (
-              <div
-                key={file.id || `${file.name}-${index}`}
-                className="grid grid-cols-[2fr_1fr_1.4fr_1fr] items-center gap-2 border border-[var(--gray-400)] px-[10px] py-2"
-              >
-                <p className="text-[12px] text-[var(--gray-700)]">
-                  {file.name}
-                </p>
+            {uploadedFiles && uploadedFiles.length > 0 ? (
+              uploadedFiles.map((file, index) => (
+                <div
+                  key={file.id || `${file.file_name}-${index}`}
+                  className="grid grid-cols-[2fr_1fr_1.4fr_1fr] items-center gap-2 border border-[var(--gray-400)] px-[10px] py-2"
+                >
+                  <p className="text-[12px] text-[var(--gray-700)]">
+                    {file?.file_name}
+                  </p>
 
-                <p className="inline-flex w-fit border border-[var(--gray-700)] bg-[var(--gray-200)] px-2 py-1 text-[11px]">
-                  {file.status}
-                </p>
+                  <p className="inline-flex w-fit border border-[var(--gray-700)] bg-[var(--gray-200)] px-2 py-1 text-[11px]">
+                    {file.status}
+                  </p>
 
-                <p className="text-[12px] text-[var(--gray-700)]">
-                  {file.updatedAt}
-                </p>
-                <p className="text-[12px] text-[var(--gray-700)]">
-                  {file.rows}
-                </p>
-              </div>
-            ))}
+                  <p className="text-center text-[12px] text-[var(--gray-700)]">
+                    {file?.uploaded_at?.split("T")[0]}
+                  </p>
+                  <p className="text-center text-[12px] text-[var(--gray-700)]">
+                    {file.invalid_rows}
+                  </p>
+                </div>
+              ))
+            ) : (
+              <p className="p-3 text-[12px] text-[var(--gray-700)]">
+                No files uploaded
+              </p>
+            )}
           </div>
         </div>
       </div>

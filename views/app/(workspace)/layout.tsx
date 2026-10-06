@@ -1,7 +1,6 @@
 "use client";
 
-import { Sidebar } from "../../components/Sidebar";
-
+import Sidebar from "@/components/Sidebar";
 import { useAuthStore } from "@/store/authStore";
 
 interface AuthLayout {

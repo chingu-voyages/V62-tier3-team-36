@@ -1,4 +1,4 @@
-import { authApi } from "./axios";
+import { api } from "./axios";
 
 interface Register {
   full_name: string;
@@ -22,13 +22,13 @@ interface ForgotPassword {
 }
 
 export const register = ({ full_name, organisation_name, email, password }: Register) =>
-  authApi.post("/api/signup", { full_name, organisation_name, email, password });
+  api.post("/api/signup", { full_name, organisation_name, email, password });
 
 export const login = ({ email, password }: Login) =>
-  authApi.post("/api/login", { email, password });
+  api.post("/api/login", { email, password });
 
 export const forgot_password = ({ email }: ForgotPassword) =>
-  authApi.post("/api/forgot_password", { email });
+  api.post("/api/forgot_password", { email });
 
 export const reset_password = ({ token, password }: ResetPassword) =>
-  authApi.post("/api/reset_password", { token, password });
+  api.post("/api/reset_password", { token, password });

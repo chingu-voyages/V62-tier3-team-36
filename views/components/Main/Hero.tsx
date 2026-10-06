@@ -4,9 +4,9 @@ import Link from "next/link";
 
 import PieChart from "./Charts/pieChart";
 import SimpleBarChart from "./Charts/BarChart";
-import Card from "./Card";
 
 import { useAuthStore } from "@/store/authStore";
+import Card from "./Card";
 
 const Hero = () => {
   const user = useAuthStore((state) => state.user);
