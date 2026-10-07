@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -11,7 +12,10 @@ export const ForgotPassword = () => {
 
   return (
     <div>
-      <div>Logo</div>
+      <div className="flex items-center mb-4 justify-center">
+        <Image src="/logo.svg" alt="Logo" width={32} height={32} />
+        <span className="ml-2 text-lg font-bold">RetailLen</span>
+      </div>
       <div className="font-bold mt-[20px] text-[24px] text-[#202020]">
         Forgot Password
       </div>

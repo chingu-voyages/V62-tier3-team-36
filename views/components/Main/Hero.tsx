@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 
-import PieChart from "./Charts/pieChart";
+import PieChart from "./Charts/PieChart";
 import SimpleBarChart from "./Charts/BarChart";
+import Card from "./Card";
 
 import { useAuthStore } from "@/store/authStore";
-import Card from "./Card";
 
 const Hero = () => {
   const user = useAuthStore((state) => state.user);
@@ -32,13 +32,22 @@ const Hero = () => {
             the real insights hiding in your data — trends, outliers and the
             full analysis, in plain language.
           </p>
-          <div className="flex justify-center space-x-3">
-            <Link
-              href="/Register"
-              className=" p-3 w-[200px]  bg-[#202020] font-bold text-lg rounded-xl text-white text-center hover:bg-gray-800 hover:scale-105 "
-            >
-              Sign up know
-            </Link>
+          <div className="flex space-x-3">
+            {user ? (
+              <Link
+                href="/Dashboard"
+                className=" p-3 w-[200px]  bg-[#202020] font-bold text-lg rounded-xl text-white text-center hover:bg-gray-800 hover:scale-105 "
+              >
+                Go to dashboard
+              </Link>
+            ) : (
+              <Link
+                href="/Register"
+                className=" p-3 w-[200px]  bg-[#202020] font-bold text-lg rounded-xl text-white text-center hover:bg-gray-800 hover:scale-105 "
+              >
+                Sign up now
+              </Link>
+            )}
             <Link
               href={user ? "/UploadCSV" : "/LogIn"}
               className=" p-3 w-[200px]  bg-white font-bold text-lg rounded-xl  text-center  "

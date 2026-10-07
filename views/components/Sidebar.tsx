@@ -1,52 +1,39 @@
 "use client";
 
-import { useAuthStore } from "@/store/authStore";
+import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
 
-const NAV_ITEMS = [
-  { href: "/", label: "Home" },
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/login", label: "Login" },
-  { href: "/signup", label: "Sign Up" },
-  { href: "/profile", label: "Profile" },
-];
-
-const BACKEND_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL ??
-  "https://v62-tier3-team-36.onrender.com";
+import { useSidebar, NAV_ITEMS } from "./hooks/useSidebar";
 
 export default function Sidebar() {
-  const pathname = usePathname();
-  const router = useRouter();
-  const [collapsed, setCollapsed] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const user = useAuthStore((state) => state.user);
+  const {
+    pathname,
+    collapsed,
+    setCollapsed,
+    mobileOpen,
+    setMobileOpen,
+    user,
+    handleLogout,
+    width,
+    showLabels,
+  } = useSidebar();
 
-  async function handleLogout() {
-    const token = localStorage.getItem("access_token");
-    if (token) {
-      await fetch(`${BACKEND_URL}/api/logout`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-      }).catch(() => {});
+  const visibleNavItems = NAV_ITEMS.filter((item) => {
+    if (!user) {
+      return true;
     }
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
-    useAuthStore.getState().setUser(null);
-    setMobileOpen(false);
-    router.push("/login");
-  }
 
-  const width = collapsed ? "md:w-16" : "md:w-60";
-  const showLabels = !collapsed;
+    return item.href !== "/LogIn" && item.href !== "/Register";
+  });
 
   return (
     <>
       {/* Mobile top bar */}
       <div className="flex items-center justify-between border-b border-black/[.08] bg-white px-4 py-3 md:hidden dark:border-white/[.145] dark:bg-black">
-        <span className="text-base font-semibold">Platform</span>
+        <div className="flex items-center mb-4 justify-center">
+          <Image src="/logo.svg" alt="Logo" width={32} height={32} />
+          <span className="ml-2 text-lg font-bold">RetailLen</span>
+        </div>
         <button
           type="button"
           aria-label={mobileOpen ? "Close menu" : "Open menu"}
@@ -65,7 +52,7 @@ export default function Sidebar() {
           className="border-b border-black/[.08] bg-white px-4 py-2 md:hidden dark:border-white/[.145] dark:bg-black"
         >
           <ul className="flex flex-col">
-            {NAV_ITEMS.map((item) => (
+            {visibleNavItems.map((item) => (
               <li key={item.href}>
                 <Link
                   href={item.href}
@@ -105,7 +92,10 @@ export default function Sidebar() {
       >
         <div className="flex items-center justify-between px-4 py-4">
           {showLabels && (
-            <span className="text-base font-semibold">Platform</span>
+            <div className="flex items-center justify-center">
+              <Image src="/logo.svg" alt="Logo" width={32} height={32} />
+              <span className="ml-2 text-lg font-bold">RetailLen</span>
+            </div>
           )}
           <button
             type="button"
@@ -120,7 +110,7 @@ export default function Sidebar() {
 
         <nav aria-label="Platform" className="flex-1 px-2">
           <ul className="flex flex-col gap-1">
-            {NAV_ITEMS.map((item) => (
+            {visibleNavItems.map((item) => (
               <li key={item.href}>
                 <Link
                   href={item.href}
@@ -156,7 +146,7 @@ export default function Sidebar() {
           ) : (
             showLabels && (
               <Link
-                href="/login"
+                href="/LogIn"
                 className="block rounded-md bg-foreground py-1.5 text-center text-sm text-background"
               >
                 Sign in

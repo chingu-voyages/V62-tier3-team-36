@@ -21,7 +21,7 @@ const UploadCSVPage = () => {
 
   return (
     <div className="flex items-center justify-center">
-      <div className="w-full max-w-[1200px]">
+      <div className="w-full">
         <div className="flex gap-5 p-5">
           <div className="flex-1">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
