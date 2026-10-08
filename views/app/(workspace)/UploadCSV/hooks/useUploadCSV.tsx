@@ -43,7 +43,7 @@ export const useUploadCSV = () => {
           ACCEPTED_FILE_TYPES.includes(file.type) || file.name.endsWith(".csv"),
         "Only .csv files are accepted.",
       );
-
+    
     const result = csvFileSchema.safeParse(csvFile);
 
     if (!result.success) {
@@ -51,30 +51,23 @@ export const useUploadCSV = () => {
       setIsModalOpen(true);
       return;
     }
+    CsvStore.setFile(csvFile);
+    router.push("/ValidationCSV");
+    // try {
+    //   setIsUploading(true);
+    //   setError("");
+     
+    //   CsvStore.setFile(csvFile);
 
-    try {
-      setIsUploading(true);
-      setError("");
+    //   router.push("/ValidationCSV");
+    // } catch (error) {
+    //   console.error("CSV upload failed:", error);
 
-      const formData = new FormData();
-
-      formData.append("file", csvFile);
-
-      const response = await upload_csv(formData);
-
-      console.log("CSV uploaded:", response.data);
-
-      CsvStore.setFile(csvFile);
-
-      router.push("/ValidationCSV");
-    } catch (error) {
-      console.error("CSV upload failed:", error);
-
-      setError("Failed to upload CSV file. Please try again.");
-      setIsModalOpen(true);
-    } finally {
-      setIsUploading(false);
-    }
+    //   setError("Failed to upload CSV file. Please try again.");
+    //   setIsModalOpen(true);
+    // } finally {
+    //   setIsUploading(false);
+    // }
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {

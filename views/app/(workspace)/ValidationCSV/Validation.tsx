@@ -6,7 +6,7 @@ import useValidationCSV from "./hooks/useValidationCSV";
 import Status from "./State";
 
 const Validation = () => {
-  const { fileName, validationResult, isValidationFetch } = useValidationCSV();
+  const { error,fileName, validationResult, isValidationFetch } = useValidationCSV();
   return (
     <div className="flex items-center justify-center">
       <div className="flex flex-col w-full p-[20px] border-[1.6px]">
@@ -30,31 +30,38 @@ const Validation = () => {
         </div>
 
         <div className="mt-[18px] w-full flex flex-col border-[1.6px] border-[#202020]">
+          {error ?
+          <>
+          {error?.error?
           <Status
-            isValid={validationResult?.required_Columns || false}
-            isValidationFetch={isValidationFetch}
-            validation_type="Required Columns"
+           
+            validation_type={error?.error}
           />
+          :null
+          }
+          {Array.isArray(error?.row_errors) && error?.row_errors.map((errors:any) => {
+          return (
           <Status
-            isValid={validationResult?.data_type || false}
-            isValidationFetch={isValidationFetch}
-            validation_type="Data types"
-          />
+           
+            validation_type={`${errors.error} in row ${errors.row}`}
+          />)
+          })}
+          {error.invalid_rows ?
           <Status
-            isValid={validationResult?.data_format || false}
-            isValidationFetch={isValidationFetch}
-            validation_type="Data Format"
+            validation_type={`invalid rows ${error?.invalid_rows}`}
           />
+          :null
+          }
+          { error.valid_rows?
           <Status
-            isValid={validationResult?.unique_row || false}
-            isValidationFetch={isValidationFetch}
-            validation_type="Unique row identifier"
-          />
-          <Status
-            isValid={validationResult?.currency_value || false}
-            isValidationFetch={isValidationFetch}
-            validation_type="Currency values"
-          />
+            validation_type={`valid rows ${error.valid_rows}`}
+          />:null
+          }
+
+          </>
+         :
+         null
+        }
         </div>
       </div>
     </div>
