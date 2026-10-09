@@ -1,4 +1,4 @@
-import axios from "axios";
+import { api } from "./axios";
 
 interface Register {
   full_name: string;
@@ -20,15 +20,6 @@ interface ResetPassword {
 interface ForgotPassword {
   email: string;
 }
-
-const api = axios.create({
-  baseURL:
-    process.env.NEXT_PUBLIC_BACKEND_URL ?? "https://v62-tier3-team-36.onrender.com",
-  headers: {
-    Accept: "application/json",
-    "Content-Type": "application/json",
-  },
-});
 
 export const register = ({ full_name, organisation_name, email, password }: Register) =>
   api.post("/api/signup", { full_name, organisation_name, email, password });

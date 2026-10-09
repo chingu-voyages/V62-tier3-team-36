@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import { z } from "zod";
 
-import { reset_password } from "@/api/auth/api";
+import { reset_password } from "@/api/auth";
 
 import type { FormEvent } from "react";
 

@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 
 import { AxiosError } from "axios";
 
-import { login } from "@/api/auth/api";
+import { login } from "@/api/auth";
 import { setAuthSession } from "../../../../utils/authSession";
 import { useAuthStore } from "@/store/authStore";
 
@@ -39,11 +39,11 @@ export const useLogin = () => {
         password,
       });
 
-      const user = response.data.user;
+      const { access_token, refresh_token, user } = response.data;
 
       setAuthSession({
-        token: response.data.token,
-        refreshToken: response.data.refreshToken,
+        accessToken: access_token,
+        refreshToken: refresh_token,
         user,
       });
 

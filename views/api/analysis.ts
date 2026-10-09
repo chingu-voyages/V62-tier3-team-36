@@ -1,0 +1,12 @@
+import { api } from "./axios";
+
+export const upload_csv = (data: FormData) => {
+  return api.post("/api/analysis/uploads", data);
+};
+
+export const get_list_csv = () => {
+  return api.get("/api/analysis/uploads");
+};
+export const analysisData = ({id}:{id:string})=>{
+  return api.get("api/analysis/data/"+id)
+}

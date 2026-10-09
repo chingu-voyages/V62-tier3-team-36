@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
 
-import { register } from "@/api/auth/api";
+import { register } from "@/api/auth";
 
 import type { FormEvent } from "react";
 
