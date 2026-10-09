@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 
 import { get_upload_csv } from "@/api/analysis";
-
 import type { UploadDetail } from "../types";
 
 const ALL_PERIODS = "All periods";
