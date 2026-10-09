@@ -7,3 +7,6 @@ export const upload_csv = (data: FormData) => {
 export const get_list_csv = () => {
   return api.get("/api/analysis/uploads");
 };
+export const analysisData = ({id}:{id:string})=>{
+  return api.get("api/analysis/data/"+id)
+}

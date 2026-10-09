@@ -13,8 +13,8 @@ const Hero = () => {
 
   return (
     <section className="w-full h-full flex flex-col  mt-10">
-      <div className="w-full grid lg:grid-cols-2 grid-cols-1 justify-items-center gap-5 h-full p-10">
-        <div className="col-span-1 flex flex-col space-y-5 max-w-[500px]">
+      <div className="w-full grid lg:grid-cols-2 grid-cols-1 justify-items-center gap-5 h-full p-15 px-20">
+        <div className="col-span-1 flex flex-col space-y-5 max-w-[380px] md:max-w-[500px]">
           <p className="md:text-7xl text-5xl font-bold w-md">
             <span className="text-[#202020]">
               Every shelf,
