@@ -9,10 +9,26 @@ export type RevenueByCategoryItem = {
   units: number;
 };
 
+export type RevenueByRegionItem = {
+  region: string;
+  revenue: number;
+  units: number;
+};
+
 export type TopProductItem = {
   product: string;
   revenue: number;
   units: number;
+};
+
+export type UploadRecord = {
+  order_id: string;
+  order_date: string;
+  product: string;
+  category: string;
+  region: string;
+  units: number;
+  revenue: number;
 };
 
 export type UploadAnalysis = {
@@ -23,6 +39,7 @@ export type UploadAnalysis = {
   growth?: number;
   top_products?: TopProductItem[];
   revenue_by_category?: RevenueByCategoryItem[];
+  revenue_by_region?: RevenueByRegionItem[];
   revenue_trend?: RevenueTrendItem[];
 };
 
@@ -35,4 +52,5 @@ export type UploadDetail = {
   invalid_rows: number;
   row_errors: Array<{ row: number; error: string }>;
   analysis: UploadAnalysis | null;
+  records?: UploadRecord[];
 };

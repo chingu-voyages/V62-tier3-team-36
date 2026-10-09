@@ -1,4 +1,4 @@
-import { UploadDetailPage } from "../UploadDetailPage";
+import { UploadDetailPage } from "../UploadDetail/UploadDetailPage";
 
 export interface UploadDetailPageProps {
   params: Promise<{ uploadId: string }>;
