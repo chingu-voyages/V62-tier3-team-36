@@ -42,14 +42,14 @@ const Hero = () => {
               </Link>
             ) : (
               <Link
-                href="/Register"
+                href="/SignUp"
                 className=" p-3 w-[200px]  bg-[#202020] font-bold text-lg rounded-xl text-white text-center hover:bg-gray-800 hover:scale-105 "
               >
                 Sign up now
               </Link>
             )}
             <Link
-              href={user ? "/UploadCSV" : "/LogIn"}
+              href={user ? "/UploadCSV" : "/SignIn"}
               className=" p-3 w-[200px]  bg-white font-bold text-lg rounded-xl  text-center  "
             >
               Upload Your CSV

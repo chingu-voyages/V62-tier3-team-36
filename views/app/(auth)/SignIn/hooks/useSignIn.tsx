@@ -12,7 +12,7 @@ import { useAuthStore } from "@/store/authStore";
 
 import type { FormEvent } from "react";
 
-export const useLogin = () => {
+export const useSignIn = () => {
   const router = useRouter();
 
   const setUser = useAuthStore((state) => state.setUser);

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { useSidebar, NAV_ITEMS } from "./hooks/useSidebar";
+import { useSidebar } from "./hooks/useSidebar";
 
 export default function Sidebar() {
   const {
@@ -16,15 +16,8 @@ export default function Sidebar() {
     handleLogout,
     width,
     showLabels,
+    visibleNavItems,
   } = useSidebar();
-
-  const visibleNavItems = NAV_ITEMS.filter((item) => {
-    if (!user) {
-      return true;
-    }
-
-    return item.href !== "/LogIn" && item.href !== "/Register";
-  });
 
   return (
     <>
@@ -135,7 +128,7 @@ export default function Sidebar() {
               {user?.full_name ?? user?.email ?? "Not signed in"}
             </p>
           )}
-          {user ? (
+          {user && (
             <button
               type="button"
               onClick={handleLogout}
@@ -143,15 +136,6 @@ export default function Sidebar() {
             >
               {collapsed ? "↩" : "Log out"}
             </button>
-          ) : (
-            showLabels && (
-              <Link
-                href="/LogIn"
-                className="block rounded-md bg-foreground py-1.5 text-center text-sm text-background"
-              >
-                Sign in
-              </Link>
-            )
           )}
         </div>
       </aside>

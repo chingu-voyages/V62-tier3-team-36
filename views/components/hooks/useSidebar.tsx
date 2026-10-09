@@ -5,15 +5,15 @@ import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
 import { useAuthStore } from "@/store/authStore";
-import { getUserData } from "@/utils/authSession";
+import { clearAuthSession, getUserData } from "@/utils/authSession";
 
 export const NAV_ITEMS = [
   { href: "/", label: "Home" },
   { href: "/Dashboard", label: "Dashboard" },
   { href: "/UploadCSV", label: "Upload CSV" },
   { href: "/ValidationCSV", label: "Validation" },
-  { href: "/LogIn", label: "Login" },
-  { href: "/Register", label: "Sign Up" },
+  { href: "/SignIn", label: "Sign In" },
+  { href: "/SignUp", label: "Sign Up" },
 ];
 
 const BACKEND_URL =
@@ -47,15 +47,25 @@ export const useSidebar = () => {
         headers: { Authorization: `Bearer ${token}` },
       }).catch(() => {});
     }
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
-    useAuthStore.getState().setUser(null);
+
+    clearAuthSession();
+    useAuthStore.getState().logout();
     setMobileOpen(false);
-    router.push("/LogIn");
+    router.replace("/SignIn");
   }
 
   const width = collapsed ? "md:w-16" : "md:w-60";
   const showLabels = !collapsed;
+
+  const visibleNavItems = NAV_ITEMS.filter((item) => {
+    const publicGuestRoutes = ["/", "/SignIn", "/SignUp"];
+
+    if (!user) {
+      return publicGuestRoutes.includes(item.href);
+    }
+
+    return item.href !== "/SignIn" && item.href !== "/SignUp";
+  });
 
   return {
     pathname,
@@ -69,5 +79,6 @@ export const useSidebar = () => {
     handleLogout,
     width,
     showLabels,
+    visibleNavItems,
   };
 };

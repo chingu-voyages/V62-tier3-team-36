@@ -1,13 +1,14 @@
 "use client";
+
 import Image from "next/image";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 
-import { useLogin } from "./hooks/useLogin";
+import { useSignIn } from "./hooks/useSignIn";
 
-export const Login = () => {
+export const SignIn = () => {
   const {
     email,
     setEmail,
@@ -16,7 +17,7 @@ export const Login = () => {
     isLoading,
     error,
     handleSubmit,
-  } = useLogin();
+  } = useSignIn();
 
   return (
     <div>
@@ -25,7 +26,7 @@ export const Login = () => {
         <span className="ml-2 text-lg font-bold">RetailLen</span>
       </div>
       <div className="font-bold mt-[20px] text-[24px] text-[#202020]">
-        {error ? "Login Error" : "Login"}
+        {error ? "Sign In Error" : "Sign In"}
       </div>
       <div className="mt-[8px] mb-[22px] text-[#6F6F6F] text-[14px] font-light">
         {error

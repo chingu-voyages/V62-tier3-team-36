@@ -1,15 +1,16 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/RegisterInput";
 
-import { useRegister } from "./hooks/useRegister";
+import { useSignUp } from "./hooks/useSignUp";
 
-const Register = () => {
+const SignUp = () => {
   const {
-    handleRegister,
+    handleSignUp,
     email,
     setEmail,
     password,
@@ -22,7 +23,7 @@ const Register = () => {
     errors,
     setConfirmPassword,
     confirmPassword,
-  } = useRegister();
+  } = useSignUp();
 
   return (
     <div>
@@ -31,12 +32,12 @@ const Register = () => {
         <span className="ml-2 text-lg font-bold">RetailLen</span>
       </div>
       <div className="font-bold mt-[20px] text-[24px] text-[#202020]">
-        Register
+        Sign Up
       </div>
       <div className="mt-[8px] mb-[22px] text-[#6F6F6F] text-[14px] font-light">
         Create your workspace account.
       </div>
-      <form onSubmit={handleRegister} className="space-y-[12px] w-full">
+      <form onSubmit={handleSignUp} className="space-y-[12px] w-full">
         {errors.server ? <p role="alert">{errors.server}</p> : null}
         <Input
           name="full_name"
@@ -88,8 +89,16 @@ const Register = () => {
           text={isLoading ? "Creating..." : "Continue"}
         />
       </form>
+      <div className="mt-[16px] text-center">
+        <Link
+          href="/SignIn"
+          className="text-[14px] text-[#6F6F6F] hover:text-[#222222] font-medium"
+        >
+          Already have an account? Sign In.
+        </Link>
+      </div>
     </div>
   );
 };
 
-export default Register;
+export default SignUp;

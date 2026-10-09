@@ -2,7 +2,6 @@ import Link from "next/link";
 
 interface ErrorCSCModalProps {
   onClose?: () => void;
-  
 }
 
 export const ErrorCSCModal = ({ onClose }: ErrorCSCModalProps) => {
@@ -13,7 +12,7 @@ export const ErrorCSCModal = ({ onClose }: ErrorCSCModalProps) => {
 
         <h1 className="mt-5 text-2xl font-bold">Could not load datasets</h1>
         <p className="mx-auto mt-2 max-w-[360px] text-sm text-[var(--gray-600)]">
-         Check your connection and try again.
+          Check your connection and try again.
         </p>
 
         <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">

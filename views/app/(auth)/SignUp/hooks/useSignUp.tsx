@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+
 import { useRouter } from "next/navigation";
+
 import { z } from "zod";
 
 import { register } from "@/api/auth";
@@ -37,7 +39,7 @@ const registerSchema = z
     path: ["confirmPassword"],
   });
 
-export function useRegister() {
+export const useSignUp = () => {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -47,7 +49,7 @@ export function useRegister() {
   const [errors, setErrors] = useState<RegisterErrors>({});
   const [isLoading, setIsLoading] = useState(false);
 
-  async function handleRegister(event: FormEvent<HTMLFormElement>) {
+  async function handleSignUp(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setErrors({});
 
@@ -78,7 +80,7 @@ export function useRegister() {
         full_name: result.data.fullName,
         organisation_name: result.data.organisationName,
       });
-      router.push("/LogIn");
+      router.push("/SignIn");
     } catch {
       setErrors({ server: "Could not create the account. Please try again." });
     } finally {
@@ -99,6 +101,6 @@ export function useRegister() {
     errors,
     confirmPassword,
     setConfirmPassword,
-    handleRegister,
+    handleSignUp,
   };
-}
+};
