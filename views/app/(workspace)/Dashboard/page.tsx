@@ -1,12 +1,7 @@
-import React from "react"
+import { Dashboard } from "./Dashboard";
 
-const page = ()=>{
-    return (
-        <div className="flex flex-col">
-            
-        </div>
-    )
+const page = () => {
+  return <Dashboard />;
+};
 
-}
-
-export default page
+export default page;
