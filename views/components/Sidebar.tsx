@@ -1,76 +1,32 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 
-const NAV_ITEMS = [
-  { href: "/", label: "Home" },
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/login", label: "Login" },
-  { href: "/signup", label: "Sign Up" },
-  { href: "/profile", label: "Profile" },
-];
-
-const BACKEND_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:5000";
-
-type SessionUser = {
-  full_name?: string;
-  email?: string;
-};
+import { useSidebar } from "./hooks/useSidebar";
 
 export default function Sidebar() {
-  const pathname = usePathname();
-  const router = useRouter();
-  const [collapsed, setCollapsed] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [user, setUser] = useState<SessionUser | null>(null);
-
-  useEffect(() => {
-    const token = localStorage.getItem("access_token");
-    if (!token) {
-      return;
-    }
-    let cancelled = false;
-    fetch(`${BACKEND_URL}/api/me`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (!cancelled) setUser(data ?? null);
-      })
-      .catch(() => {
-        if (!cancelled) setUser(null);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [pathname]);
-
-  async function handleLogout() {
-    const token = localStorage.getItem("access_token");
-    if (token) {
-      await fetch(`${BACKEND_URL}/api/logout`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-      }).catch(() => {});
-    }
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
-    setUser(null);
-    setMobileOpen(false);
-    router.push("/login");
-  }
-
-  const width = collapsed ? "md:w-16" : "md:w-60";
-  const showLabels = !collapsed;
+  const {
+    pathname,
+    collapsed,
+    setCollapsed,
+    mobileOpen,
+    setMobileOpen,
+    user,
+    handleLogout,
+    width,
+    showLabels,
+    visibleNavItems,
+  } = useSidebar();
 
   return (
     <>
       {/* Mobile top bar */}
       <div className="flex items-center justify-between border-b border-black/[.08] bg-white px-4 py-3 md:hidden dark:border-white/[.145] dark:bg-black">
-        <span className="text-base font-semibold">Platform</span>
+        <div className="flex items-center mb-4 justify-center">
+          <Image src="/logo.svg" alt="Logo" width={32} height={32} />
+          <span className="ml-2 text-lg font-bold">RetailLen</span>
+        </div>
         <button
           type="button"
           aria-label={mobileOpen ? "Close menu" : "Open menu"}
@@ -89,7 +45,7 @@ export default function Sidebar() {
           className="border-b border-black/[.08] bg-white px-4 py-2 md:hidden dark:border-white/[.145] dark:bg-black"
         >
           <ul className="flex flex-col">
-            {NAV_ITEMS.map((item) => (
+            {visibleNavItems.map((item) => (
               <li key={item.href}>
                 <Link
                   href={item.href}
@@ -108,7 +64,7 @@ export default function Sidebar() {
           </ul>
           <div className="flex items-center justify-between py-2">
             <span className="truncate text-xs text-zinc-600 dark:text-zinc-400">
-              {user?.email ?? user?.full_name ?? "Not signed in"}
+              {user?.full_name ?? user?.email ?? "Not signed in"}
             </span>
             {user && (
               <button
@@ -128,7 +84,12 @@ export default function Sidebar() {
         className={`hidden min-h-screen flex-col border-r border-black/[.08] bg-white md:flex dark:border-white/[.145] dark:bg-black ${width}`}
       >
         <div className="flex items-center justify-between px-4 py-4">
-          {showLabels && <span className="text-base font-semibold">Platform</span>}
+          {showLabels && (
+            <div className="flex items-center justify-center">
+              <Image src="/logo.svg" alt="Logo" width={32} height={32} />
+              <span className="ml-2 text-lg font-bold">RetailLen</span>
+            </div>
+          )}
           <button
             type="button"
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
@@ -142,7 +103,7 @@ export default function Sidebar() {
 
         <nav aria-label="Platform" className="flex-1 px-2">
           <ul className="flex flex-col gap-1">
-            {NAV_ITEMS.map((item) => (
+            {visibleNavItems.map((item) => (
               <li key={item.href}>
                 <Link
                   href={item.href}
@@ -164,10 +125,10 @@ export default function Sidebar() {
         <div className="border-t border-black/[.08] p-3 dark:border-white/[.145]">
           {showLabels && (
             <p className="mb-2 truncate text-xs text-zinc-600 dark:text-zinc-400">
-              {user?.email ?? user?.full_name ?? "Not signed in"}
+              {user?.full_name ?? user?.email ?? "Not signed in"}
             </p>
           )}
-          {user ? (
+          {user && (
             <button
               type="button"
               onClick={handleLogout}
@@ -175,15 +136,6 @@ export default function Sidebar() {
             >
               {collapsed ? "↩" : "Log out"}
             </button>
-          ) : (
-            showLabels && (
-              <Link
-                href="/login"
-                className="block rounded-md bg-foreground py-1.5 text-center text-sm text-background"
-              >
-                Sign in
-              </Link>
-            )
           )}
         </div>
       </aside>

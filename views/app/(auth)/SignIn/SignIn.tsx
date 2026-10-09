@@ -1,26 +1,23 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 
-import { useResetPassword } from "./hooks/useResetPassword";
+import { useSignIn } from "./hooks/useSignIn";
 
-interface ResetPasswordProps {
-  token: string;
-}
-
-export const ResetPassword = ({ token }: ResetPasswordProps) => {
+export const SignIn = () => {
   const {
+    email,
+    setEmail,
     password,
     setPassword,
-    confirmPassword,
-    setConfirmPassword,
     isLoading,
     error,
     handleSubmit,
-  } = useResetPassword(token);
+  } = useSignIn();
 
   return (
     <div>
@@ -29,10 +26,12 @@ export const ResetPassword = ({ token }: ResetPasswordProps) => {
         <span className="ml-2 text-lg font-bold">RetailLen</span>
       </div>
       <div className="font-bold mt-[20px] text-[24px] text-[#202020]">
-        Reset Password
+        {error ? "Sign In Error" : "Sign In"}
       </div>
       <div className="mt-[8px] mb-[22px] text-[#6F6F6F] text-[14px] font-light">
-        Enter and confirm your new password.
+        {error
+          ? "Please fix the errors before continuing."
+          : "Enter your email and password to continue."}
       </div>
       <form onSubmit={handleSubmit} className="space-y-[12px] w-full">
         {error ? (
@@ -44,30 +43,38 @@ export const ResetPassword = ({ token }: ResetPasswordProps) => {
           </div>
         ) : null}
         <Input
-          value={password}
-          setValue={setPassword}
+          value={email}
+          setValue={setEmail}
           isLoading={isLoading}
-          placeholder="New password"
-          type="password"
-          name="password"
-          autoComplete="new-password"
+          placeholder="Work email"
+          type="email"
+          name="email"
+          autoComplete="email"
           required
         />
         <Input
-          value={confirmPassword}
-          setValue={setConfirmPassword}
+          value={password}
+          setValue={setPassword}
           isLoading={isLoading}
-          placeholder="Confirm new password"
+          placeholder="Password"
           type="password"
-          name="confirm_password"
-          autoComplete="new-password"
+          name="password"
+          autoComplete="current-password"
           required
         />
         <Button
           isLoading={isLoading}
-          text={isLoading ? "Updating..." : "Continue"}
+          text={isLoading ? "Logging in..." : "Continue"}
         />
       </form>
+      <div className="mt-[16px] text-center">
+        <Link
+          href="/ForgotPassword"
+          className="text-[14px] text-[#6F6F6F] hover:text-[#222222] font-medium"
+        >
+          Forgot password?
+        </Link>
+      </div>
     </div>
   );
 };
