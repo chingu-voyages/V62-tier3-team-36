@@ -14,7 +14,11 @@ export type RevenueByRegionItem = {
   revenue: number;
   units: number;
 };
-
+export type RevenueByProductItem={
+  product:string;
+  revenue:number;
+  units:number;
+}
 export type TopProductItem = {
   product: string;
   revenue: number;

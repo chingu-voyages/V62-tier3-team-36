@@ -34,6 +34,9 @@ interface ErrorProps{
    const [isValidationFetch,setIsValidationFetch]=useState(false)
    const [validationResult ,setValidationResult]=useState<ValidationResultProps>({})
    const [error,setError]=useState<ErrorProps>({})
+   const [isValid,setIsValid]=useState(false)
+   const [upload_id,setUploadId]=useState("")
+   const [isLoading,setIsLoading]=useState(true)
    async function upload(csvFile:File){
        try{
         const formData = new FormData();
@@ -46,13 +49,17 @@ interface ErrorProps{
             if(response.data.invalid_rows > 0){
               const data = response.data
               setError({ row_errors:data.row_errors,invalid_rows:data.invalid_rows,valid_rows:data.valid_rows})
-              analysisStore.setAnalysis(response.data.analysis)
               
+              setIsValid(true)
+              setIsLoading(false)
+              setUploadId(response.data.upload_id)
             }
-            else if(response.data.invalid_rows == 0){
+            else {
               setError({error:"all rows and columns are passed and you can continue"})
-              analysisStore.setAnalysis(response.data.analysis)
-            
+              
+              setIsValid(true)
+              setIsLoading(false)
+              setUploadId(response.data.upload_id)
             }
         }
       }
@@ -60,6 +67,7 @@ interface ErrorProps{
         if(error.response.status == 422){
             console.log(error.response.data)
             setError(error.response.data)
+            setIsLoading(false)
         }
 
       } 
@@ -78,10 +86,13 @@ interface ErrorProps{
   
   return (
     {
+      isLoading,
+      upload_id,
       fileName,
       validationResult,
       isValidationFetch,
-      error
+      error,
+      isValid
     }
   )
 }

@@ -2,8 +2,8 @@
 
 import React, { useEffect } from "react";
 import KPICard from "./KPICard";
-import Barchar from "./Barchart";
-import Piechart from "./Piechart";
+import Barchar from "../Dashboard/UploadDetail/Barchart";
+import Piechart from "../Dashboard/UploadDetail/Piechart";
 import Linechart from "./LineChart";
 import Table from "./table";
 import useAnalysis from "./hooks/useAnalysis";
@@ -68,6 +68,7 @@ const Analysis = ({ id }: { id: string }) => {
           ]}
           dataKey="revenue"
           nameKey={"product"}
+          title="Pie Chart Group by Region"
         />
         <Barchar
           data={[

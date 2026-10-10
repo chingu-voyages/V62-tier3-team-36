@@ -1,9 +1,9 @@
-import { RevenueByCategoryItem, RevenueByRegionItem } from "../types";
+import { RevenueByCategoryItem, RevenueByRegionItem,RevenueByProductItem } from "../types";
 
 interface RevenueTrendProps {
   title: string;
   label: string;
-  filteredRanking: RevenueByCategoryItem[] | RevenueByRegionItem[];
+  filteredRanking: RevenueByCategoryItem[] |  RevenueByProductItem[]  ;
   formatRevenue: (value?: number) => string;
 }
 
@@ -29,7 +29,7 @@ export const RevenueTrend = ({
             {filteredRanking.map((item) =>
               (() => {
                 const itemLabel =
-                  "category" in item ? item.category : item.region;
+                  "category" in item ? item.category : item.product;
 
                 return (
                   <div

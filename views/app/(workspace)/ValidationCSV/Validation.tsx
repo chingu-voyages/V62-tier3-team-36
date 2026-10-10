@@ -6,7 +6,7 @@ import useValidationCSV from "./hooks/useValidationCSV";
 import Status from "./State";
 
 const Validation = () => {
-  const { error,fileName, validationResult, isValidationFetch } = useValidationCSV();
+  const {isLoading, upload_id,isValid,error,fileName, validationResult, isValidationFetch } = useValidationCSV();
   return (
     <div className="flex items-center justify-center">
       <div className="flex flex-col w-full p-[20px] border-[1.6px]">
@@ -18,12 +18,20 @@ const Validation = () => {
               {fileName ? fileName : "Coulden't find file name"}
             </p>
           </div>
-          <Link
-            href="/Dashboard"
-            className="text-center min-w-[98px]  bg-[#D7D7D7] font-bold text-[14px] py-[9px] "
-          >
-            Continue
-          </Link>
+          {
+          !isLoading ?
+          <div className="flex flex-row space-x-3 items-center">
+            <p className="text-sm font-light text-[var(--medium-gray)]">
+              {isValid?"Go To Analysis Page":"Invalid Data "}
+            </p>
+            <Link
+              href={isValid?`/Dashboard/${upload_id}`:"/UploadCSV"}
+              className="text-center   bg-[#D7D7D7] font-bold text-[14px] px-[14px] py-[9px] "
+            >
+              {isValid?"Continue":"Fix"}
+            </Link>
+          </div>
+         :null}
         </div>
         <div className="mt-[18px] bg-[#E0E0E0] text-[#202020] border-[0.8px] text-[12px] p-[10px]">
           Validation protects analytics quality before processing begins.

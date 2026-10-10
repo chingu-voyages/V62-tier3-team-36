@@ -8,6 +8,7 @@ import type { UploadDetail } from "../types";
 const ALL_PERIODS = "All periods";
 const ALL_CATEGORIES = "All categories";
 const ALL_REGIONS = "All regions";
+const ALL_PRODUCTS="Alll products"
 
 type FilterState = {
   period: string;
@@ -66,7 +67,8 @@ export const useUploadDetail = (params: Promise<{ uploadId: string }>) => {
   const trend = analysis?.revenue_trend ?? [];
   const categoryRanking = analysis?.revenue_by_category ?? [];
   const regionRanking = analysis?.revenue_by_region ?? [];
-
+  const products = analysis?.top_products ?? []
+  
   const trendChartData = trend.map((item) => ({
     name: item.month,
     revenue: item.revenue,
@@ -81,6 +83,7 @@ export const useUploadDetail = (params: Promise<{ uploadId: string }>) => {
     ALL_REGIONS,
     ...regionRanking.map((item) => item.region),
   ];
+ 
 
   const periodOptions = [ALL_PERIODS, ...trend.map((item) => item.month)];
 
@@ -182,6 +185,7 @@ export const useUploadDetail = (params: Promise<{ uploadId: string }>) => {
     categoryOptions,
     periodOptions,
     isFiltersOpen,
+    products,
     draftFilters,
     appliedFilters,
     filteredRegionRanking,

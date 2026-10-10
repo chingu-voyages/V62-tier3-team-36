@@ -6,6 +6,7 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  PieChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -23,6 +24,7 @@ import { RevenueTrend } from "./RevenueTrend";
 import { ActiveFilterChips } from "./ActiveFilterChips";
 import { RankingTable } from "./RankingTable";
 import { ErrorRow } from "./ErrorRow";
+import PieChartCustom from "./Piechart";
 
 export const UploadDetailPage = ({ params }: UploadDetailPageProps) => {
   const router = useRouter();
@@ -34,6 +36,7 @@ export const UploadDetailPage = ({ params }: UploadDetailPageProps) => {
     activeFilterChips,
     revenueFilterMessage,
     regionOptions,
+    products,
     categoryOptions,
     periodOptions,
     isFiltersOpen,
@@ -42,6 +45,7 @@ export const UploadDetailPage = ({ params }: UploadDetailPageProps) => {
     filteredRegionRanking,
     filteredCategoryRanking,
     filteredTrendData,
+    
     filteredMetrics,
     formatRevenue,
     handleClearFilters,
@@ -117,6 +121,8 @@ export const UploadDetailPage = ({ params }: UploadDetailPageProps) => {
         </div>
       </div>
 
+      {filteredRegionRanking.length > 0?<PieChartCustom data={filteredRegionRanking} dataKey="revenue" nameKey="region" title="Pie Chart Group By Region" />:null}
+      
       <div className="mt-4 flex flex-col gap-4">
         <RevenueTrend
           label="Category"
@@ -124,13 +130,18 @@ export const UploadDetailPage = ({ params }: UploadDetailPageProps) => {
           filteredRanking={filteredCategoryRanking}
           formatRevenue={formatRevenue}
         />
+        {products?
         <RevenueTrend
-          label="Region"
-          title="Top regions by revenue"
-          filteredRanking={filteredRegionRanking}
+          label="Product"
+          title="Top Product by revenue"
+          filteredRanking={products}
           formatRevenue={formatRevenue}
         />
+        :null
+       }
+
       </div>
+      
 
       <div className="mt-4 border border-[var(--gray-400)] bg-[var(--gray-200)]">
         <RankingTable detail={detail} />

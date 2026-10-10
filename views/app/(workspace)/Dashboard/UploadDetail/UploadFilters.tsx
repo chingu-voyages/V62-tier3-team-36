@@ -2,11 +2,13 @@ interface UploadFiltersProps {
   regionOptions: string[];
   categoryOptions: string[];
   periodOptions: string[];
+ 
   isFiltersOpen: boolean;
   draftFilters: {
     period: string;
     category: string;
     region: string;
+    
   };
   appliedFilters: {
     period: string;
@@ -31,6 +33,7 @@ export const UploadFilters = ({
   categoryOptions,
   periodOptions,
   isFiltersOpen,
+ 
   draftFilters,
   appliedFilters,
   handleClearFilters,
