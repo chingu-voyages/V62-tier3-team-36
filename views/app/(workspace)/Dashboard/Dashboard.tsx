@@ -5,9 +5,7 @@ import Link from "next/link";
 import { DashboardSkeleton } from "./DashboardSkeleton";
 import { useDashboard } from "./hooks/useDashboard";
 import { EmptyDashboard } from "./EmptyDashboard";
-import { KPICard } from "../Analysis/KPICard";
-
-const metrics = ["Total revenue", "Transactions", "Avg. order"];
+import { NoDataModal } from "../Modals/NoDataModal";
 
 const getStatusClasses = (status: string) => {
   const normalizedStatus = status.toLowerCase();
@@ -33,9 +31,12 @@ export const Dashboard = () => {
   if (isLoading) {
     return <DashboardSkeleton />;
   }
-
   if (uploadedFiles.length === 0) {
-    return <EmptyDashboard />;
+    return (
+      <>
+        <EmptyDashboard /> <NoDataModal />
+      </>
+    );
   }
 
   return (
@@ -72,13 +73,6 @@ export const Dashboard = () => {
           </svg>
           Upload CSV
         </Link>
-      </div>
-
-      {/* KPI Cards */}
-      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        {metrics.map((label) => (
-          <KPICard key={label} name={label} analysis={0} />
-        ))}
       </div>
 
       {/* Workspace Overview */}
@@ -127,7 +121,7 @@ export const Dashboard = () => {
                 <Link
                   key={file.upload_id}
                   href={`/Dashboard/${file.upload_id}`}
-                  className="grid grid-cols-[2fr_1fr_1.4fr_0.7fr] items-center gap-3 px-5 py-4 transition-colors duration-150 hover:bg-gray-50 focus-visible:bg-gray-50 focus-visible:outline-none"
+                  className="group grid grid-cols-[2fr_1fr_1.4fr_0.7fr] items-center gap-3 px-5 py-4 transition-colors duration-150 hover:bg-gray-50 focus-visible:bg-gray-50 focus-visible:outline-none"
                 >
                   <div className="flex min-w-0 items-center gap-3">
                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gray-100 text-gray-500 transition-colors group-hover:bg-gray-200">
@@ -183,3 +177,5 @@ export const Dashboard = () => {
     </div>
   );
 };
+
+export default Dashboard;
