@@ -4,11 +4,13 @@ from werkzeug.utils import secure_filename
 
 from controllers.analysis_controller import (
     CsvValidationError,
+    get_insight_context,
     get_upload,
     list_uploads,
     upload_csv,
 )
 from middlewares import require_auth
+from services.openrouter_service import OpenRouterError, generate_insights
 
 analysis_bp = Blueprint("analysis", __name__, url_prefix="/api/analysis")
 
@@ -48,3 +50,28 @@ def upload_detail(upload_id):
     if result is None:
         return jsonify({"error": "Upload not found"}), 404
     return jsonify(result), 200
+
+
+@analysis_bp.post("/uploads/<upload_id>/insights")
+@require_auth
+def upload_insights(upload_id):
+    context = get_insight_context(g.user_id, upload_id)
+    if context is None:
+        return jsonify({"error": "Upload not found"}), 404
+    if not context:
+        return jsonify({"error": "Analysis is not available for this upload"}), 409
+
+    api_key = current_app.config.get("OPENROUTER_API_KEY", "")
+    if not api_key:
+        return jsonify({"error": "AI insights are not configured"}), 503
+
+    try:
+        insights = generate_insights(
+            context,
+            api_key=api_key,
+            model=current_app.config.get("OPENROUTER_MODEL", "openai/gpt-4o-mini"),
+        )
+    except OpenRouterError:
+        current_app.logger.exception("OpenRouter insights request failed")
+        return jsonify({"error": "AI insights could not be generated"}), 502
+    return jsonify(insights), 200

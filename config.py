@@ -27,6 +27,8 @@ class Config:
     RESEND_FROM_EMAIL = os.getenv(
         "RESEND_FROM_EMAIL", "Sales Dashboard <onboarding@resend.dev>"
     )
+    OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
+    OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL", "openai/gpt-4o-mini")
 
     RESET_TOKEN_TTL_MINUTES = int(os.getenv("RESET_TOKEN_TTL_MINUTES", "60"))
     RESET_REQUEST_COOLDOWN_SECONDS = int(

@@ -1,12 +1,22 @@
+import json
+from datetime import datetime, timedelta, timezone
 from io import BytesIO
 from types import SimpleNamespace
 from unittest.mock import patch
+from urllib.error import HTTPError
 
 import jwt
+import pytest
 from bson import ObjectId
 
 from app import create_app
-from controllers.analysis_controller import build_summary, parse_sales_csv, upload_csv
+from controllers.analysis_controller import (
+    build_summary,
+    get_insight_context,
+    parse_sales_csv,
+    upload_csv,
+)
+from services.openrouter_service import OpenRouterError, generate_insights
 
 
 class TestConfig:
@@ -15,6 +25,8 @@ class TestConfig:
     MONGO_URI = "mongodb://localhost:27017"
     MONGO_DB_NAME = "test"
     TESTING = True
+    OPENROUTER_API_KEY = "test-openrouter-key"
+    OPENROUTER_MODEL = "test/model"
 
 
 def _token(user_id="507f1f77bcf86cd799439011"):
@@ -87,9 +99,254 @@ def test_analysis_routes_require_an_access_token():
         client.post("/api/analysis/uploads"),
         client.get("/api/analysis/uploads"),
         client.get("/api/analysis/uploads/not-an-id"),
+        client.post("/api/analysis/uploads/not-an-id/insights"),
     ]
 
-    assert [response.status_code for response in responses] == [401, 401, 401]
+    assert [response.status_code for response in responses] == [401, 401, 401, 401]
+
+
+def test_insights_route_generates_ai_insights_for_the_selected_upload():
+    app = create_app(TestConfig)
+    client = app.test_client()
+    context = [{"file_name": "sales.csv", "analysis": {"total_revenue": 100}}]
+    user_db = SimpleNamespace(
+        users=SimpleNamespace(find_one=lambda query: {"_id": query["_id"]})
+    )
+
+    with (
+        patch("middlewares.get_db", return_value=user_db),
+        patch("routes.analysis_routes.get_insight_context", return_value=context),
+        patch(
+            "routes.analysis_routes.generate_insights",
+            return_value=[{
+                "type": "trend",
+                "title": "Revenue increased",
+                "description": "Revenue grew compared with the previous period.",
+                "recommendation": "Maintain inventory for the strongest categories.",
+            }],
+        ) as generate,
+    ):
+        response = client.post(
+            "/api/analysis/uploads/507f1f77bcf86cd799439011/insights",
+            headers={"Authorization": f"Bearer {_token()}"},
+        )
+
+    assert response.status_code == 200
+    assert response.get_json() == [{
+            "type": "trend",
+            "title": "Revenue increased",
+            "description": "Revenue grew compared with the previous period.",
+            "recommendation": "Maintain inventory for the strongest categories.",
+        }]
+    generate.assert_called_once_with(
+        context, api_key="test-openrouter-key", model="test/model"
+    )
+
+
+def test_insights_route_reports_missing_openrouter_configuration():
+    class UnconfiguredTestConfig(TestConfig):
+        OPENROUTER_API_KEY = ""
+
+    app = create_app(UnconfiguredTestConfig)
+    client = app.test_client()
+    user_db = SimpleNamespace(
+        users=SimpleNamespace(find_one=lambda query: {"_id": query["_id"]})
+    )
+    with (
+        patch("middlewares.get_db", return_value=user_db),
+        patch("routes.analysis_routes.get_insight_context", return_value=[{}]),
+    ):
+        response = client.post(
+            "/api/analysis/uploads/507f1f77bcf86cd799439011/insights",
+            headers={"Authorization": f"Bearer {_token()}"},
+        )
+
+    assert response.status_code == 503
+    assert response.get_json()["error"] == "AI insights are not configured"
+
+
+def test_insight_context_includes_prior_user_analyses_without_customer_ids():
+    user_id = ObjectId("507f1f77bcf86cd799439011")
+    other_user_id = ObjectId("507f1f77bcf86cd799439012")
+    upload_ids = [ObjectId() for _ in range(3)]
+    uploaded_at = datetime(2026, 1, 3, tzinfo=timezone.utc)
+
+    class Cursor:
+        def __init__(self, documents):
+            self.documents = documents
+
+        def sort(self, field, direction):
+            self.documents.sort(key=lambda document: document[field], reverse=direction < 0)
+            return self
+
+        def limit(self, count):
+            self.documents = self.documents[:count]
+            return self
+
+        def __iter__(self):
+            return iter(self.documents)
+
+    class Collection:
+        def __init__(self, documents):
+            self.documents = documents
+
+        def find_one(self, query):
+            return next(
+                (doc for doc in self.documents if matches(doc, query)),
+                None,
+            )
+
+        def find(self, query):
+            return Cursor([doc for doc in self.documents if matches(doc, query)])
+
+    def matches(document, query):
+        for key, expected in query.items():
+            value = document.get(key)
+            if isinstance(expected, dict):
+                if "$lt" in expected and not value < expected["$lt"]:
+                    return False
+            elif value != expected:
+                return False
+        return True
+
+    uploads = [
+        {
+            "_id": upload_id,
+            "user_id": user_id,
+            "file_name": f"sales-{index}.csv",
+            "status": "COMPLETED",
+            "uploaded_at": uploaded_at + timedelta(days=index),
+        }
+        for index, upload_id in enumerate(upload_ids)
+    ]
+    uploads.append({
+        **uploads[0],
+        "_id": ObjectId(),
+        "user_id": other_user_id,
+        "file_name": "other-user.csv",
+    })
+    summaries = [
+        {
+            "csv_upload_id": upload_id,
+            "user_id": user_id,
+            "total_revenue": index * 100,
+            "top_customers": [{"customer_id": "private-id", "revenue": 100}],
+        }
+        for index, upload_id in enumerate(upload_ids)
+    ]
+    fake_db = SimpleNamespace(
+        csv_uploads=Collection(uploads),
+        analysis_summaries=Collection(summaries),
+    )
+
+    with patch("controllers.analysis_controller.get_db", return_value=fake_db):
+        context = get_insight_context(str(user_id), str(upload_ids[2]))
+
+    assert [item["analysis"]["total_revenue"] for item in context] == [0, 100, 200]
+    assert all("top_customers" not in item["analysis"] for item in context)
+
+
+def test_openrouter_service_sends_configured_model_and_returns_insight_objects():
+    class Response:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return False
+
+        def read(self):
+            content = json.dumps({"insights": [{
+                "type": "trend",
+                "title": "Revenue rose",
+                "description": "Revenue increased from the previous period.",
+                "recommendation": "Monitor demand before increasing stock.",
+            }]})
+            return json.dumps({
+                "choices": [{"message": {"content": content}}]
+            }).encode()
+
+    with patch("services.openrouter_service.urlopen", return_value=Response()) as request:
+        result = generate_insights(
+            [{"analysis": {"total_revenue": 100}}],
+            api_key="test-key",
+            model="test/model",
+        )
+
+    assert result == [{
+        "type": "trend",
+        "title": "Revenue rose",
+        "description": "Revenue increased from the previous period.",
+        "recommendation": "Monitor demand before increasing stock.",
+    }]
+    sent_request = request.call_args.args[0]
+    assert sent_request.get_header("Authorization") == "Bearer test-key"
+    payload = json.loads(sent_request.data)
+    assert payload["model"] == "test/model"
+    assert payload["response_format"] == {"type": "json_object"}
+    assert payload["max_tokens"] == 1800
+    assert "2-4 sentences" in payload["messages"][0]["content"]
+
+
+def test_openrouter_service_rejects_invalid_insight_response_shape():
+    class Response:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return False
+
+        def read(self):
+            content = json.dumps({
+                "insights": [{"type": "trend", "title": "Missing fields"}]
+            })
+            return json.dumps({
+                "choices": [{"message": {"content": content}}]
+            }).encode()
+
+    with patch("services.openrouter_service.urlopen", return_value=Response()):
+        with pytest.raises(OpenRouterError, match="invalid insight object"):
+            generate_insights([], api_key="test-key", model="test/model")
+
+
+def test_openrouter_service_rejects_non_array_response():
+    class Response:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return False
+
+        def read(self):
+            content = json.dumps({"unexpected": []})
+            return json.dumps({
+                "choices": [{"message": {"content": content}}]
+            }).encode()
+
+    with patch("services.openrouter_service.urlopen", return_value=Response()):
+        with pytest.raises(OpenRouterError, match="must contain an insights array"):
+            generate_insights([], api_key="test-key", model="test/model")
+
+
+def test_openrouter_service_includes_provider_error_without_exposing_api_key():
+    error = HTTPError(
+        "https://openrouter.ai/api/v1/chat/completions",
+        400,
+        "Bad Request",
+        hdrs=None,
+        fp=BytesIO(json.dumps({
+            "error": {
+                "message": "Invalid request with test-key: unsupported response format"
+            }
+        }).encode()),
+    )
+
+    with patch("services.openrouter_service.urlopen", side_effect=error):
+        with pytest.raises(OpenRouterError) as raised:
+            generate_insights([], api_key="test-key", model="test/model")
+
+    assert "HTTP 400" in str(raised.value)
+    assert "unsupported response format" in str(raised.value)
+    assert "test-key" not in str(raised.value)
 
 
 def test_upload_history_rejects_malformed_authenticated_user_id():
