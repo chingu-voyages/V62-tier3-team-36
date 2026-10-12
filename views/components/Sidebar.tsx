@@ -22,7 +22,7 @@ export default function Sidebar() {
     <>
       {/* Mobile top bar */}
       <header className="sticky top-0 z-50 flex w-full shrink-0 items-center justify-between border-b border-gray-200 bg-white px-4 py-3 dark:border-white/[.145] dark:bg-black md:hidden">
-        <Link href="/Dashboard" className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2">
           <Image src="/logo.svg" alt="RetailLen" width={32} height={32} />
           <span className="text-lg font-bold">RetailLen</span>
         </Link>
@@ -103,7 +103,7 @@ export default function Sidebar() {
         <div className="flex min-h-[73px] items-center justify-between gap-2 px-2 py-4 lg:px-4">
           {showLabels && (
             <Link
-              href="/Dashboard"
+              href="/"
               aria-label="RetailLen home"
               className="hidden min-w-0 items-center gap-2 lg:flex"
             >

@@ -1,5 +1,6 @@
 "use client";
 import Image from "next/image";
+import Link from "next/link";
 
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -11,7 +12,7 @@ export const ForgotPassword = () => {
     useForgotPassword();
 
   return (
-    <div>
+    <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
       <div className="flex items-center mb-4 justify-center">
         <Image src="/logo.svg" alt="Logo" width={32} height={32} />
         <span className="ml-2 text-lg font-bold">RetailLen</span>
@@ -47,6 +48,14 @@ export const ForgotPassword = () => {
           text={isLoading ? "Sending..." : "Continue"}
         />
       </form>
+      <div className="border-t border-gray-100 pt-5 text-center">
+        <Link
+          href="/SignIn"
+          className="text-sm font-medium text-gray-500 transition-colors hover:text-[#222222] focus-visible:outline-none focus-visible:underline"
+        >
+          Back to sign in
+        </Link>
+      </div>
     </div>
   );
 };
