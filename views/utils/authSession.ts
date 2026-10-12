@@ -9,7 +9,7 @@ export interface AuthUser {
 }
 
 export interface AuthSession {
-  token: string;
+  accessToken: string;
   refreshToken?: string;
   user: AuthUser;
 }
@@ -22,13 +22,13 @@ const getStorage = () => {
   return window.localStorage;
 };
 
-export const setAuthSession = ({ token, refreshToken, user }: AuthSession) => {
+export const setAuthSession = ({ accessToken, refreshToken, user }: AuthSession) => {
   const storage = getStorage();
   if (!storage) {
     return;
   }
 
-  storage.setItem("access_token", token);
+  storage.setItem("access_token", accessToken);
 
   if (refreshToken) {
     storage.setItem("refresh_token", refreshToken);

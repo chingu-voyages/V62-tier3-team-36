@@ -1,9 +1,6 @@
-import Main from "@/components/Main/main"
+import Main from "@/components/Main/MainPage";
 
-
- const Home = ()=>{
-  return (
-    <Main/>
-  )
-}
-export default Home
+const Home = () => {
+  return <Main />;
+};
+export default Home;

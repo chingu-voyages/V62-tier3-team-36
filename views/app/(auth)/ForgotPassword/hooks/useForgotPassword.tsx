@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { z } from "zod";
 
-import { forgot_password } from "@/api/auth/api";
+import { forgot_password } from "@/api/auth";
 
 import type { FormEvent } from "react";
 

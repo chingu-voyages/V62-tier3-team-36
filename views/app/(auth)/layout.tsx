@@ -1,16 +1,20 @@
-import React from 'react'
-interface Children{
-    children:React.ReactNode
+import Sidebar from "@/components/Sidebar";
+
+interface Children {
+  children: React.ReactNode;
 }
 
-const Authlayout = ({children}:Children) => {
+const AuthLayout = ({ children }: Children) => {
   return (
-    <div className='flex flex-col items-center justify-center w-full h-[600px]'>
-        <div className='flex flex-col w-[350px] md:w-[463px]  p-[28px] dark:bg- bg-[#FFFFFF] border-2 border-[#202020] '>
-            {children}
+    <div className="flex min-h-screen w-full">
+      <Sidebar />
+      <main className="flex min-w-0 flex-1 items-center justify-center p-4 sm:p-8">
+        <div className="flex w-full max-w-[463px] flex-col border-2 border-[#202020] bg-[#FFFFFF] p-[28px]">
+          {children}
         </div>
+      </main>
     </div>
-  )
-}
+  );
+};
 
-export default Authlayout
+export default AuthLayout;
