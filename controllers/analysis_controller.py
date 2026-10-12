@@ -288,6 +288,50 @@ def get_upload(user_id, upload_id):
     return result
 
 
+def get_insight_context(user_id, upload_id):
+    """Return aggregate analysis history up to and including the selected upload."""
+    try:
+        owner_id, parsed_upload_id = ObjectId(user_id), ObjectId(upload_id)
+    except (InvalidId, TypeError, ValueError):
+        return None
+
+    db = get_db()
+    current_upload = db.csv_uploads.find_one({
+        "_id": parsed_upload_id,
+        "user_id": owner_id,
+        "status": "COMPLETED",
+    })
+    if current_upload is None:
+        return None
+
+    previous_uploads = list(db.csv_uploads.find({
+        "user_id": owner_id,
+        "status": "COMPLETED",
+        "uploaded_at": {"$lt": current_upload["uploaded_at"]},
+    }).sort("uploaded_at", -1).limit(5))
+    previous_uploads.reverse()
+    uploads = previous_uploads + [current_upload]
+
+    context = []
+    for upload in uploads:
+        summary = db.analysis_summaries.find_one({
+            "csv_upload_id": upload["_id"],
+            "user_id": owner_id,
+        })
+        if summary is None:
+            continue
+        serialized = _serialize_summary(summary)
+        context.append({
+            "uploaded_at": upload["uploaded_at"].isoformat(),
+            "analysis": {
+                key: value
+                for key, value in serialized.items()
+                if key != "top_customers"
+            },
+        })
+    return context
+
+
 def _serialize_upload(upload):
     return {
         "upload_id": str(upload["_id"]),
