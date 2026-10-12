@@ -6,20 +6,73 @@ interface NoDataModalProps {
 
 export const NoDataModal = ({ onClose }: NoDataModalProps) => {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--gray-600)]/50 px-4 py-8">
-      <section className="relative w-full max-w-[560px] border-[1.6px] border-[var(--gray-700)] bg-[var(--white)] px-6 py-10 text-center shadow-[0_16px_50px_rgba(0,0,0,0.12)]">
-        <div className="mx-auto h-[74px] w-[74px] rounded-full border-[2.4px] border-[var(--gray-700)] bg-[var(--gray-300)]" />
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/40 px-4 py-8 backdrop-blur-[2px]"
+      onClick={onClose}
+    >
+      <section
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="no-data-title"
+        className="relative w-full max-w-lg rounded-2xl border border-gray-200 bg-white px-6 py-10 text-center shadow-xl sm:px-10"
+        onClick={(event) => event.stopPropagation()}
+      >
+        {/* Icon */}
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gray-100 text-gray-600">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="28"
+            height="28"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.7"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <path d="M14 2v6h6" />
+            <path d="M8 13h8" />
+            <path d="M8 17h5" />
+          </svg>
+        </div>
 
-        <h1 className="mt-5 text-2xl font-bold">No datasets yet</h1>
-        <p className="mx-auto mt-2 max-w-[360px] text-sm text-[var(--gray-600)]">
-          Upload your first sales CSV to start generating analytics.
+        {/* Content */}
+        <h2
+          id="no-data-title"
+          className="mt-5 text-xl font-semibold tracking-tight text-gray-900"
+        >
+          No datasets yet
+        </h2>
+
+        <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-gray-500">
+          Upload your first sales CSV to start generating analytics and
+          exploring your retail performance.
         </p>
 
+        {/* Actions */}
         <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Link
             href="/UploadCSV"
-            className="flex h-9 items-center justify-center border-[1.6px] border-[var(--gray-700)] bg-[var(--gray-400)] px-4 text-sm font-bold transition hover:bg-[var(--gray-300)]"
+            className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-[#222222] px-5 text-sm font-medium text-white transition hover:bg-gray-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2 sm:w-auto"
           >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M12 3v12" />
+              <path d="m7 10 5 5 5-5" />
+              <path d="M5 17v4h14v-4" />
+            </svg>
             Upload CSV
           </Link>
 
@@ -27,7 +80,7 @@ export const NoDataModal = ({ onClose }: NoDataModalProps) => {
             <button
               type="button"
               onClick={onClose}
-              className="flex h-9 items-center justify-center border-[0.8px] border-[var(--gray-700)] px-6 text-sm font-bold transition hover:bg-[var(--gray-300)]"
+              className="inline-flex h-10 w-full items-center justify-center rounded-lg border border-gray-200 bg-white px-5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-300 focus-visible:ring-offset-2 sm:w-auto"
             >
               Back
             </button>

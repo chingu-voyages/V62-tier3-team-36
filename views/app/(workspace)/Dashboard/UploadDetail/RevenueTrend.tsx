@@ -1,9 +1,9 @@
-import { RevenueByCategoryItem, RevenueByRegionItem,RevenueByProductItem } from "../types";
+import type { RevenueByCategoryItem, RevenueByProductItem } from "../types";
 
 interface RevenueTrendProps {
   title: string;
   label: string;
-  filteredRanking: RevenueByCategoryItem[] |  RevenueByProductItem[]  ;
+  filteredRanking: RevenueByCategoryItem[] | RevenueByProductItem[];
   formatRevenue: (value?: number) => string;
 }
 
@@ -14,45 +14,105 @@ export const RevenueTrend = ({
   formatRevenue,
 }: RevenueTrendProps) => {
   return (
-    <div className="border border-[var(--gray-400)] bg-[var(--gray-200)] p-[14px]">
-      <p className="text-[13px] font-extrabold">{title}</p>
+    <div className="min-w-0 rounded-2xl border border-gray-200/80 bg-white p-5 shadow-sm transition-shadow duration-200 hover:shadow-md">
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="text-base font-semibold tracking-tight text-[#202020]">
+          {title}
+        </h3>
+
+        <span className="shrink-0 rounded-lg bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-500">
+          {filteredRanking.length} items
+        </span>
+      </div>
 
       {filteredRanking.length > 0 ? (
-        <div className="mt-3 overflow-x-auto">
-          <div className="min-w-[360px] border border-[var(--gray-400)] bg-[var(--white)]">
-            <div className="grid grid-cols-[1fr_90px_90px] gap-2 border-b border-[var(--gray-400)] bg-[var(--gray-300)] px-3 py-2 text-[12px] font-extrabold">
-              <p>{label}</p>
-              <p className="text-right">Revenue</p>
-              <p className="text-right">Units</p>
-            </div>
+        <div className="mt-5 overflow-x-auto">
+          <table className="w-full min-w-[360px] border-collapse text-sm">
+            <thead>
+              <tr className="border-b border-gray-200">
+                <th
+                  scope="col"
+                  className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500"
+                >
+                  {label}
+                </th>
+                <th
+                  scope="col"
+                  className="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-500"
+                >
+                  Revenue
+                </th>
+                <th
+                  scope="col"
+                  className="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-500"
+                >
+                  Units
+                </th>
+              </tr>
+            </thead>
 
-            {filteredRanking.map((item) =>
-              (() => {
+            <tbody className="divide-y divide-gray-100">
+              {filteredRanking.map((item, index) => {
                 const itemLabel =
                   "category" in item ? item.category : item.product;
 
                 return (
-                  <div
+                  <tr
                     key={itemLabel}
-                    className="grid grid-cols-[1fr_90px_90px] gap-2 border-b border-[var(--gray-400)] px-3 py-2 text-[12px]"
+                    className="transition-colors duration-150 hover:bg-gray-50"
                   >
-                    <p className="text-[var(--gray-700)]">{itemLabel}</p>
-                    <p className="text-right text-[var(--gray-700)]">
+                    <td className="px-3 py-3">
+                      <div className="flex min-w-0 items-center gap-3">
+                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-xs font-semibold text-gray-500">
+                          {index + 1}
+                        </span>
+
+                        <span className="truncate font-medium text-gray-700">
+                          {itemLabel}
+                        </span>
+                      </div>
+                    </td>
+
+                    <td className="whitespace-nowrap px-3 py-3 text-right font-semibold tabular-nums text-[#202020]">
                       {formatRevenue(item.revenue)}
-                    </p>
-                    <p className="text-right text-[var(--gray-700)]">
+                    </td>
+
+                    <td className="whitespace-nowrap px-3 py-3 text-right tabular-nums text-gray-500">
                       {item.units}
-                    </p>
-                  </div>
+                    </td>
+                  </tr>
                 );
-              })(),
-            )}
-          </div>
+              })}
+            </tbody>
+          </table>
         </div>
       ) : (
-        <p className="mt-3 text-[12px] text-[var(--gray-600)]">
-          No ranking data available.
-        </p>
+        <div className="mt-5 flex flex-col items-center justify-center rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-10 text-center">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="28"
+            height="28"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="mb-3 text-gray-400"
+            aria-hidden="true"
+          >
+            <path d="M3 3v18h18" />
+            <path d="m19 9-5 5-4-4-3 3" />
+          </svg>
+
+          <p className="text-sm font-medium text-gray-600">
+            No ranking data available
+          </p>
+
+          <p className="mt-1 text-xs text-gray-400">
+            Try changing your filters or upload another dataset.
+          </p>
+        </div>
       )}
     </div>
   );

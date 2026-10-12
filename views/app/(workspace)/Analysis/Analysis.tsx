@@ -1,105 +1,106 @@
 "use client";
 
-import React, { useEffect } from "react";
-import KPICard from "./KPICard";
-import Barchar from "../Dashboard/UploadDetail/Barchart";
-import Piechart from "../Dashboard/UploadDetail/Piechart";
-import Linechart from "./LineChart";
-import Table from "./table";
-import useAnalysis from "./hooks/useAnalysis";
-import { get_list_csv } from "@/api/analysis";
+import Link from "next/link";
 
-const Analysis = ({ id }: { id: string }) => {
-  const { data, setData, error, setError } = useAnalysis();
-  useEffect(() => {
-    async function analysis() {
-      try {
-        const response = await get_list_csv();
-        setData(response.data.analysis);
-      } catch (error: any) {
-        if (error.response.status == 401) {
-          setError("you must login to use the app");
-        } else {
-          setError("Some thing is wrong please try again");
-        }
-        return null;
-      }
-    }
-    analysis();
-  }, [id]);
+import { KPICard } from "./KPICard";
+import { Barchart } from "./Barchart";
+import { Piechart } from "./Piechart";
+
+import { useUploadDetailStore } from "@/store/uploadDetailStore";
+
+const Analysis = () => {
+  const detail = useUploadDetailStore((state) => state.detail?.analysis);
+  const uploadId = useUploadDetailStore((state) => state.detail?.upload_id);
+
   return (
-    <div className="flex flex-col w-full p-[20px] border-[1.6px]">
-      <div className="flex flex-row justify-between ">
-        <div className="flex flex-col ">
-          <p className="text-lg font-bold">Your Data Analysis</p>
-          <p className="text-sm  font-light text-[var(--medium-gray)]">
-            Retail Lense you data analyser
+    <div className="flex w-full flex-col gap-6 border border-gray-200 bg-white p-5 sm:p-6">
+      {/* Header */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 className="text-xl font-bold tracking-tight text-[#202020]">
+            Your Data Analysis
+          </h2>
+          <p className="mt-1 text-sm text-gray-500">
+            Explore your retail performance and customer insights.
           </p>
         </div>
-        <div className="text-center items-center text-[14px] h-[40px] border-[1.6px] text-[#202020] border-[#202020] bg-[#D7D7D7] px-[14px] py-[9px] ">
-          Filters
-        </div>
+
+        <Link
+          href={`/Dashboard/${uploadId}`}
+          className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+        >
+          Back
+        </Link>
       </div>
-      <div className="mt-[8px] grid lg:grid-cols-4 md:grid-cols-3 grid-cols-1 gap-3 max-w-[1000px] ">
-        <KPICard name="Tevenue" analysis="$284k" />
-        <KPICard name="AOV" analysis="$40" />
-        <KPICard name="Total Order" analysis="40" />
-        <KPICard name="Profit Margin" analysis="20%" />
-        <KPICard name="Growth" analysis="-5%" />
-      </div>
-      <div className="grid mt-[10px] md:grid-cols-2  gap-3 grid-col-1">
-        <Barchar
-          data={[
-            { category: "Office", revenue: 240, units: 2 },
-            { category: "Lighting", revenue: 90, units: 3 },
-            { category: "Electronics", revenue: 500, units: 2 },
-            { category: "cloths", revenue: 330, units: 4 },
-          ]}
-          layout="vertical"
+
+      {/* KPI cards */}
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <KPICard
+          name="Total Customers"
+          analysis={detail?.total_customers ?? 0}
+        />
+
+        <KPICard name="Total Units" analysis={detail?.total_units ?? 0} />
+
+        <KPICard
+          name="Profit Margin"
+          analysis={`${detail?.profit_margin ?? 0}%`}
+        />
+
+        <KPICard
+          name="Growth"
+          analysis={`${
+            detail?.growth != null && detail.growth < 0 ? "- " : ""
+          }${Math.abs(detail?.growth ?? 0)}%`}
+        />
+      </section>
+
+      {/* Charts */}
+
+      <div className="flex flex-col gap-6">
+        <Barchart
+          title="Revenue by Category"
+          description="Compare revenue across product categories."
+          data={detail?.revenue_by_category ?? []}
           dataKey="category"
           barDataKey="revenue"
-        />
-        <Piechart
-          data={[
-            { product: "Desk", revenue: 240, units: 2 },
-            { product: "Lamp", revenue: 90, units: 3 },
-            { product: "shouse", revenue: 50, units: 2 },
-            { product: "tishert", revenue: 60, units: 3 },
-          ]}
-          dataKey="revenue"
-          nameKey={"product"}
-          title="Pie Chart Group by Region"
-        />
-        <Barchar
-          data={[
-            { category: "Office", revenue: 240, units: 2 },
-            { category: "Lighting", revenue: 90, units: 3 },
-            { category: "Electronics", revenue: 500, units: 2 },
-            { category: "cloths", revenue: 330, units: 4 },
-          ]}
           layout="horizontal"
-          dataKey="category"
+        />
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <Piechart
+            title="Revenue by Customer Segment"
+            description="See how each segment contributes to total revenue."
+            data={detail?.revenue_by_segment ?? []}
+            dataKey="revenue"
+            nameKey="customer_segment"
+          />
+
+          <Barchart
+            title="Revenue by Region"
+            description="Identify your strongest-performing regions."
+            data={detail?.revenue_by_region ?? []}
+            dataKey="region"
+            barDataKey="revenue"
+            layout="horizontal"
+          />
+        </div>
+        <Barchart
+          title="Top Products by Revenue"
+          description="Discover your best-performing products."
+          data={detail?.top_products ?? []}
+          dataKey="product"
           barDataKey="revenue"
+          layout="horizontal"
         />
-        <Linechart
-          data={[
-            { month: "2026-03", revenue: 130 },
-            { month: "2026-04", revenue: 220 },
-            { month: "2026-05", revenue: 180 },
-            { month: "2026-07", revenue: 55 },
-            { month: "2026-08", revenue: 120 },
-          ]}
-          xDataKey={"month"}
-          lDataKey="revenue"
-        />
-        <Table
-          columns={["product", "revenue", "units"]}
-          data={[
-            { product: "Desk", revenue: 240, units: 2 },
-            { product: "Lamp", revenue: 90, units: 3 },
-            { product: "shouse", revenue: 50, units: 2 },
-            { product: "tishert", revenue: 60, units: 3 },
-          ]}
+
+        <Barchart
+          title="Top Customers by Revenue"
+          description="Rank customers by generated revenue."
+          data={detail?.top_customers ?? []}
+          dataKey="customer_id"
+          barDataKey="revenue"
+          layout="horizontal"
         />
       </div>
     </div>

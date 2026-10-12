@@ -6,7 +6,6 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
-  PieChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -24,7 +23,7 @@ import { RevenueTrend } from "./RevenueTrend";
 import { ActiveFilterChips } from "./ActiveFilterChips";
 import { RankingTable } from "./RankingTable";
 import { ErrorRow } from "./ErrorRow";
-import PieChartCustom from "./Piechart";
+import { Piechart } from "../../Analysis/Piechart";
 
 export const UploadDetailPage = ({ params }: UploadDetailPageProps) => {
   const router = useRouter();
@@ -36,8 +35,9 @@ export const UploadDetailPage = ({ params }: UploadDetailPageProps) => {
     activeFilterChips,
     revenueFilterMessage,
     regionOptions,
-    products,
     categoryOptions,
+    products,
+    productOptions,
     periodOptions,
     isFiltersOpen,
     draftFilters,
@@ -45,7 +45,6 @@ export const UploadDetailPage = ({ params }: UploadDetailPageProps) => {
     filteredRegionRanking,
     filteredCategoryRanking,
     filteredTrendData,
-    
     filteredMetrics,
     formatRevenue,
     handleClearFilters,
@@ -70,12 +69,10 @@ export const UploadDetailPage = ({ params }: UploadDetailPageProps) => {
         activeFilterChips={activeFilterChips}
         setIsFiltersOpen={setIsFiltersOpen}
       />
-
       <ActiveFilterChips
         activeFilterChips={activeFilterChips}
         handleClearFilters={handleClearFilters}
       />
-
       <UploadFilters
         regionOptions={regionOptions}
         categoryOptions={categoryOptions}
@@ -87,6 +84,8 @@ export const UploadDetailPage = ({ params }: UploadDetailPageProps) => {
         setIsFiltersOpen={setIsFiltersOpen}
         updateFilter={updateFilter}
         setDraftFilters={setDraftFilters}
+        products={products}
+        productOptions={productOptions}
       />
 
       <MetricsCards
@@ -96,24 +95,59 @@ export const UploadDetailPage = ({ params }: UploadDetailPageProps) => {
         formatRevenue={formatRevenue}
       />
 
-      <div className="mt-4 border border-[var(--gray-400)] bg-[var(--gray-200)] p-[14px]">
-        <p className="text-[13px] font-extrabold">Revenue trend</p>
+      <div className="mt-4">
+        <RankingTable detail={detail} />
+        <ErrorRow detail={detail} />
+      </div>
+      <div className="my-4 rounded-2xl border border-gray-200/80 bg-white p-5 shadow-sm transition-shadow duration-200 hover:shadow-md">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <h3 className="text-base font-semibold tracking-tight text-[#202020]">
+              Revenue trend
+            </h3>
+            <p className="mt-1 text-sm text-gray-500">
+              Revenue across the selected period
+            </p>
+          </div>
 
-        <div className="mt-3 border border-[var(--gray-400)] bg-[var(--white)] p-3">
-          <div className="h-[220px] w-full">
+          <span className="shrink-0 rounded-lg bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-500">
+            {filteredTrendData.length} periods
+          </span>
+        </div>
+
+        <div className="mt-5 rounded-xl border border-gray-100 bg-gray-50/50 p-3 sm:p-4">
+          <div className="h-[240px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={filteredTrendData}
-                margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+                margin={{ top: 12, right: 8, left: 8, bottom: 4 }}
+                barCategoryGap="25%"
               >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <Tooltip content={<CustomTooltip />} />
+                <CartesianGrid
+                  stroke="#E5E7EB"
+                  strokeDasharray="4 4"
+                  vertical={false}
+                />
+
+                <XAxis
+                  dataKey="name"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: "#6B7280", fontSize: 12 }}
+                  tickMargin={12}
+                />
+
+                <Tooltip
+                  content={<CustomTooltip />}
+                  cursor={{ fill: "#F3F4F6" }}
+                />
+
                 <Bar
                   dataKey="revenue"
                   name="Revenue"
-                  fill="var(--gray-500)"
-                  radius={[2, 2, 0, 0]}
+                  fill="#6B7280"
+                  radius={[6, 6, 0, 0]}
+                  maxBarSize={48}
                 />
               </BarChart>
             </ResponsiveContainer>
@@ -121,8 +155,15 @@ export const UploadDetailPage = ({ params }: UploadDetailPageProps) => {
         </div>
       </div>
 
-      {filteredRegionRanking.length > 0?<PieChartCustom data={filteredRegionRanking} dataKey="revenue" nameKey="region" title="Pie Chart Group By Region" />:null}
-      
+      {filteredRegionRanking.length > 0 ? (
+        <Piechart
+          data={filteredRegionRanking}
+          dataKey="revenue"
+          nameKey="region"
+          title="Pie Chart Group By Region"
+          description="See how each region contributes to the total revenue."
+        />
+      ) : null}
       <div className="mt-4 flex flex-col gap-4">
         <RevenueTrend
           label="Category"
@@ -130,22 +171,14 @@ export const UploadDetailPage = ({ params }: UploadDetailPageProps) => {
           filteredRanking={filteredCategoryRanking}
           formatRevenue={formatRevenue}
         />
-        {products?
-        <RevenueTrend
-          label="Product"
-          title="Top Product by revenue"
-          filteredRanking={products}
-          formatRevenue={formatRevenue}
-        />
-        :null
-       }
-
-      </div>
-      
-
-      <div className="mt-4 border border-[var(--gray-400)] bg-[var(--gray-200)]">
-        <RankingTable detail={detail} />
-        <ErrorRow detail={detail} />
+        {products ? (
+          <RevenueTrend
+            label="Product"
+            title="Top Product by revenue"
+            filteredRanking={products}
+            formatRevenue={formatRevenue}
+          />
+        ) : null}
       </div>
     </div>
   );

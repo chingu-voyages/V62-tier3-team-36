@@ -1,15 +1,7 @@
-import React from 'react'
-import Analysis from "../Analysis"
-import { promises } from 'dns'
+import Analysis from "../Analysis";
 
-interface pageProps{
-  params:Promise<{id:string}>
-}
-const page = async({params}:pageProps) => {
-  const {id} = await params
-  return (
-    <Analysis id={id} />
-  )
-}
+const page = async () => {
+  return <Analysis />;
+};
 
-export default page
+export default page;
