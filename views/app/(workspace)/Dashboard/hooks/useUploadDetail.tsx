@@ -3,30 +3,32 @@
 import { useEffect, useState } from "react";
 
 import { get_upload_csv } from "@/api/analysis";
+
 import type { UploadDetail } from "../types";
 
 const ALL_PERIODS = "All periods";
 const ALL_CATEGORIES = "All categories";
 const ALL_REGIONS = "All regions";
-const ALL_PRODUCTS="Alll products"
+const ALL_PRODUCTS = "Alll products";
 
 type FilterState = {
   period: string;
   category: string;
   region: string;
+  product: string;
 };
 
 const DEFAULT_FILTERS: FilterState = {
   period: ALL_PERIODS,
   category: ALL_CATEGORIES,
   region: ALL_REGIONS,
+  product: ALL_PRODUCTS,
 };
 
 export const useUploadDetail = (params: Promise<{ uploadId: string }>) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [detail, setDetail] = useState<UploadDetail | null>(null);
-
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [draftFilters, setDraftFilters] =
     useState<FilterState>(DEFAULT_FILTERS);
@@ -67,8 +69,8 @@ export const useUploadDetail = (params: Promise<{ uploadId: string }>) => {
   const trend = analysis?.revenue_trend ?? [];
   const categoryRanking = analysis?.revenue_by_category ?? [];
   const regionRanking = analysis?.revenue_by_region ?? [];
-  const products = analysis?.top_products ?? []
-  
+  const products = analysis?.top_products ?? [];
+
   const trendChartData = trend.map((item) => ({
     name: item.month,
     revenue: item.revenue,
@@ -83,9 +85,13 @@ export const useUploadDetail = (params: Promise<{ uploadId: string }>) => {
     ALL_REGIONS,
     ...regionRanking.map((item) => item.region),
   ];
- 
 
   const periodOptions = [ALL_PERIODS, ...trend.map((item) => item.month)];
+
+  const productOptions = [
+    ALL_PRODUCTS,
+    ...products.map((item) => item.product),
+  ];
 
   const updateFilter = (field: keyof FilterState, value: string) => {
     setDraftFilters((prev) => ({ ...prev, [field]: value }));
@@ -101,6 +107,9 @@ export const useUploadDetail = (params: Promise<{ uploadId: string }>) => {
       : []),
     ...(appliedFilters.region !== ALL_REGIONS
       ? [`Region: ${appliedFilters.region}`]
+      : []),
+    ...(appliedFilters.product !== ALL_PRODUCTS
+      ? [`Product: ${appliedFilters.product}`]
       : []),
   ];
 
@@ -186,6 +195,7 @@ export const useUploadDetail = (params: Promise<{ uploadId: string }>) => {
     periodOptions,
     isFiltersOpen,
     products,
+    productOptions,
     draftFilters,
     appliedFilters,
     filteredRegionRanking,

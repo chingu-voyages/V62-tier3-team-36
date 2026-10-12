@@ -3,6 +3,12 @@ export type RevenueTrendItem = {
   revenue: number;
 };
 
+export type RevenueBySegmentItem = {
+  segment: string;
+  revenue: number;
+  units: number;
+};
+
 export type RevenueByCategoryItem = {
   category: string;
   revenue: number;
@@ -21,6 +27,12 @@ export type RevenueByProductItem={
 }
 export type TopProductItem = {
   product: string;
+  revenue: number;
+  units: number;
+};
+
+export type TopCustomerItem = {
+  customer: string;
   revenue: number;
   units: number;
 };
@@ -44,7 +56,14 @@ export type UploadAnalysis = {
   top_products?: TopProductItem[];
   revenue_by_category?: RevenueByCategoryItem[];
   revenue_by_region?: RevenueByRegionItem[];
+  revenue_by_segment?: RevenueBySegmentItem[];
   revenue_trend?: RevenueTrendItem[];
+  profit_margin?: number;
+  growth_rate?: number;
+  total_customers?: number;
+  top_customers?: TopCustomerItem[];
+  upload_id?: string;
+
 };
 
 export type UploadDetail = {
@@ -57,4 +76,11 @@ export type UploadDetail = {
   row_errors: Array<{ row: number; error: string }>;
   analysis: UploadAnalysis | null;
   records?: UploadRecord[];
+  profit_margin?: number;
+  growth_rate?: number;
+  total_customers?: number;
+  total_orders?: number;
+  total_revenue?: number;
+  aov?: number;
+  total_units?: number;
 };
