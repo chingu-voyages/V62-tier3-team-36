@@ -1,5 +1,4 @@
-import AnalysisStore from "@/store/analysisStore";
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
 import { get_list_csv } from "@/api/analysis";
 
 interface AnalysisType {
@@ -19,7 +18,6 @@ interface AnalysisType {
   total_units?: number;
 }
 const useAnalysis = () => {
-  const analysisStore = AnalysisStore();
   const [error, setError] = useState("");
   const [data, setData] = useState<AnalysisType>({});
   async function analysis({ id }: { id: string }) {
