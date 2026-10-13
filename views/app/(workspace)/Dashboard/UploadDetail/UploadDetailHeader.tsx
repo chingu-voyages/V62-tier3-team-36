@@ -9,6 +9,7 @@ interface UploadDetailHeaderProps {
   hasActiveFilters: boolean;
   activeFilterChips: string[];
   setIsFiltersOpen: Dispatch<SetStateAction<boolean>>;
+  onExport: () => void;
 }
 
 const buttonBaseClasses =
@@ -19,6 +20,7 @@ export const UploadDetailHeader = ({
   hasActiveFilters,
   activeFilterChips,
   setIsFiltersOpen,
+  onExport,
 }: UploadDetailHeaderProps) => {
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -57,6 +59,28 @@ export const UploadDetailHeader = ({
               {activeFilterChips.length}
             </span>
           )}
+        </button>
+
+        <button
+          type="button"
+          onClick={onExport}
+          disabled={!detail.analysis}
+          className={`${buttonBaseClasses} border-gray-200 bg-white text-gray-700 shadow-sm hover:border-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50`}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M12 4v11m0 0-4-4m4 4 4-4M5 20h14" />
+          </svg>
+          Export
         </button>
 
         <Link

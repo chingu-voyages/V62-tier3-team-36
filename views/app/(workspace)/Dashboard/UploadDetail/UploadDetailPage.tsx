@@ -24,6 +24,7 @@ import { ActiveFilterChips } from "./ActiveFilterChips";
 import { RankingTable } from "./RankingTable";
 import { ErrorRow } from "./ErrorRow";
 import { Piechart } from "../../Analysis/Piechart";
+import { exportSummary } from "./exportSummary";
 
 export const UploadDetailPage = ({ params }: UploadDetailPageProps) => {
   const router = useRouter();
@@ -68,6 +69,18 @@ export const UploadDetailPage = ({ params }: UploadDetailPageProps) => {
         hasActiveFilters={hasActiveFilters}
         activeFilterChips={activeFilterChips}
         setIsFiltersOpen={setIsFiltersOpen}
+        onExport={() =>
+          exportSummary({
+            fileName: detail.file_name,
+            uploadedAt: detail.uploaded_at,
+            filters: activeFilterChips,
+            metrics: filteredMetrics,
+            categories: filteredCategoryRanking,
+            regions: filteredRegionRanking,
+            products,
+            trend: filteredTrendData,
+          })
+        }
       />
       <ActiveFilterChips
         activeFilterChips={activeFilterChips}
