@@ -10,8 +10,9 @@ import { clearAuthSession, getUserData } from "@/utils/authSession";
 export const NAV_ITEMS = [
   { href: "/", label: "Home" },
   { href: "/Dashboard", label: "Dashboard" },
-  { href: "/UploadCSV", label: "Upload CSV" },
-  { href: "/ValidationCSV", label: "Validation" },
+  { href: "/UploadCSV", label: "Upload CSV", adminOnly: true },
+  { href: "/ValidationCSV", label: "Validation", adminOnly: true },
+  { href: "/Team", label: "Team", adminOnly: true },
   { href: "/SignIn", label: "Sign In" },
   { href: "/SignUp", label: "Sign Up" },
 ];
@@ -62,6 +63,11 @@ export const useSidebar = () => {
 
     if (!user) {
       return publicGuestRoutes.includes(item.href);
+    }
+
+    // Hiding links is a convenience only; the API enforces the Admin role.
+    if ("adminOnly" in item && user.role !== "ADMIN") {
+      return false;
     }
 
     return item.href !== "/SignIn" && item.href !== "/SignUp";

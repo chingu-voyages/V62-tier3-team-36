@@ -9,14 +9,14 @@ from controllers.analysis_controller import (
     list_uploads,
     upload_csv,
 )
-from middlewares import require_auth
+from middlewares import require_admin, require_auth
 from services.openrouter_service import OpenRouterError, generate_insights
 
 analysis_bp = Blueprint("analysis", __name__, url_prefix="/api/analysis")
 
 
 @analysis_bp.post("/uploads")
-@require_auth
+@require_admin
 def create_upload():
     uploaded_file = request.files.get("file")
     if uploaded_file is None:

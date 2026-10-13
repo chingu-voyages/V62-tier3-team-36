@@ -28,6 +28,13 @@ class SignupSchema(Schema):
     password = fields.Str(required=True, validate=validate.Length(min=8, max=128))
 
 
+class MemberSchema(SignupSchema):
+    """A member joins the Admin's workspace, so no organisation name is sent."""
+
+    class Meta:
+        exclude = ("organisation_name",)
+
+
 class RefreshSchema(Schema):
     refresh_token = fields.Str(required=True, validate=validate.Length(min=1))
 

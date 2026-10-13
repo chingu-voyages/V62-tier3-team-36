@@ -32,3 +32,8 @@ export const forgot_password = ({ email }: ForgotPassword) =>
 
 export const reset_password = ({ token, password }: ResetPassword) =>
   api.post("/api/reset_password", { token, password });
+
+export const get_members = () => api.get("/api/members");
+
+export const add_member = (member: Omit<Register, "organisation_name">) =>
+  api.post("/api/members", member);
