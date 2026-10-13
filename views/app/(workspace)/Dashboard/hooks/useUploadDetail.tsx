@@ -115,17 +115,16 @@ export const useUploadDetail = (params: Promise<{ uploadId: string }>) => {
 
   const hasActiveFilters = activeFilterChips.length > 0;
 
-  const revenueFromCategory =
+  const selectedCategory =
     appliedFilters.category !== ALL_CATEGORIES
       ? categoryRanking.find(
           (item) => item.category === appliedFilters.category,
-        )?.revenue
+        )
       : undefined;
 
-  const revenueFromRegion =
+  const selectedRegion =
     appliedFilters.region !== ALL_REGIONS
       ? regionRanking.find((item) => item.region === appliedFilters.region)
-          ?.revenue
       : undefined;
 
   const revenueFromPeriod =
@@ -136,12 +135,21 @@ export const useUploadDetail = (params: Promise<{ uploadId: string }>) => {
 
   const filteredMetrics = {
     totalRevenue:
-      revenueFromCategory ??
-      revenueFromRegion ??
+      selectedCategory?.revenue ??
+      selectedRegion?.revenue ??
       revenueFromPeriod ??
       analysis?.total_revenue,
-    totalOrders: analysis?.total_orders,
+    // The monthly trend carries no units, so a period-only filter has no value to show.
+    totalUnits:
+      selectedCategory?.units ??
+      selectedRegion?.units ??
+      (appliedFilters.period === ALL_PERIODS
+        ? analysis?.total_units
+        : undefined),
     averageOrderValue: analysis?.aov,
+    // Without a previous month that has revenue, growth is unknown rather than 0%.
+    growth:
+      (trend[trend.length - 2]?.revenue ?? 0) > 0 ? analysis?.growth : undefined,
   };
 
   const filteredTrendData =
