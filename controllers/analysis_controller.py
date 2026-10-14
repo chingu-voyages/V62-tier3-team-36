@@ -21,6 +21,16 @@ class CsvValidationError(ValueError):
     """Raised when a CSV cannot be interpreted as a sales dataset."""
 
 
+def _scope(organisation_id):
+    """Return the filter every stored-data query and write must include.
+
+    Documents are keyed by ``user_id``, which holds the workspace id (the
+    founding Admin's user id), so uploads made before workspaces existed stay
+    in their owner's workspace without a migration.
+    """
+    return {"user_id": organisation_id}
+
+
 def parse_sales_csv(content):
     """Return validated records and row errors from UTF-8 CSV bytes."""
     try:
@@ -210,8 +220,8 @@ def build_summary(records):
     }
 
 
-def upload_csv(user_id, filename, content):
-    """Validate, save, and analyze one user's CSV upload."""
+def upload_csv(organisation_id, filename, content):
+    """Validate, save, and analyze a CSV upload for one workspace."""
     records, row_errors, invalid_count = parse_sales_csv(content)
     if not records:
         return {
@@ -222,13 +232,13 @@ def upload_csv(user_id, filename, content):
         }, 422
 
     try:
-        owner_id = ObjectId(user_id)
+        owner_id = ObjectId(organisation_id)
     except (InvalidId, TypeError, ValueError):
         return {"error": "Unauthorized"}, 401
 
     db = get_db()
     upload_id = db.csv_uploads.insert_one({
-        "user_id": owner_id,
+        **_scope(owner_id),
         "file_name": filename,
         "status": "PROCESSING",
         "valid_rows": len(records),
@@ -239,12 +249,12 @@ def upload_csv(user_id, filename, content):
 
     try:
         stored_records = [
-            {**record, "user_id": owner_id, "csv_upload_id": upload_id}
+            {**record, **_scope(owner_id), "csv_upload_id": upload_id}
             for record in records
         ]
         db.sales_records.insert_many(stored_records)
         summary = build_summary(records)
-        summary.update({"user_id": owner_id, "csv_upload_id": upload_id})
+        summary.update({**_scope(owner_id), "csv_upload_id": upload_id})
         db.analysis_summaries.insert_one(summary)
         db.csv_uploads.update_one({"_id": upload_id}, {"$set": {"status": "COMPLETED"}})
     except Exception:
@@ -264,48 +274,48 @@ def upload_csv(user_id, filename, content):
     }, 201
 
 
-def list_uploads(user_id):
+def list_uploads(organisation_id):
     try:
-        owner_id = ObjectId(user_id)
+        owner_id = ObjectId(organisation_id)
     except (InvalidId, TypeError, ValueError):
         return None
-    uploads = get_db().csv_uploads.find({"user_id": owner_id}).sort("uploaded_at", -1).limit(50)
+    uploads = get_db().csv_uploads.find(_scope(owner_id)).sort("uploaded_at", -1).limit(50)
     return [_serialize_upload(upload) for upload in uploads]
 
 
-def get_upload(user_id, upload_id):
+def get_upload(organisation_id, upload_id):
     try:
-        owner_id, parsed_upload_id = ObjectId(user_id), ObjectId(upload_id)
+        owner_id, parsed_upload_id = ObjectId(organisation_id), ObjectId(upload_id)
     except (InvalidId, TypeError, ValueError):
         return None
     db = get_db()
-    upload = db.csv_uploads.find_one({"_id": parsed_upload_id, "user_id": owner_id})
+    upload = db.csv_uploads.find_one({"_id": parsed_upload_id, **_scope(owner_id)})
     if upload is None:
         return None
-    summary = db.analysis_summaries.find_one({"csv_upload_id": parsed_upload_id, "user_id": owner_id})
+    summary = db.analysis_summaries.find_one({"csv_upload_id": parsed_upload_id, **_scope(owner_id)})
     result = _serialize_upload(upload)
     result["analysis"] = _serialize_summary(summary) if summary else None
     return result
 
 
-def get_insight_context(user_id, upload_id):
+def get_insight_context(organisation_id, upload_id):
     """Return aggregate analysis history up to and including the selected upload."""
     try:
-        owner_id, parsed_upload_id = ObjectId(user_id), ObjectId(upload_id)
+        owner_id, parsed_upload_id = ObjectId(organisation_id), ObjectId(upload_id)
     except (InvalidId, TypeError, ValueError):
         return None
 
     db = get_db()
     current_upload = db.csv_uploads.find_one({
         "_id": parsed_upload_id,
-        "user_id": owner_id,
+        **_scope(owner_id),
         "status": "COMPLETED",
     })
     if current_upload is None:
         return None
 
     previous_uploads = list(db.csv_uploads.find({
-        "user_id": owner_id,
+        **_scope(owner_id),
         "status": "COMPLETED",
         "uploaded_at": {"$lt": current_upload["uploaded_at"]},
     }).sort("uploaded_at", -1).limit(5))
@@ -316,7 +326,7 @@ def get_insight_context(user_id, upload_id):
     for upload in uploads:
         summary = db.analysis_summaries.find_one({
             "csv_upload_id": upload["_id"],
-            "user_id": owner_id,
+            **_scope(owner_id),
         })
         if summary is None:
             continue
