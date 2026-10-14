@@ -9,14 +9,14 @@ from controllers.analysis_controller import (
     list_uploads,
     upload_csv,
 )
-from middlewares import require_auth
+from middlewares import require_admin, require_auth
 from services.openrouter_service import OpenRouterError, generate_insights
 
 analysis_bp = Blueprint("analysis", __name__, url_prefix="/api/analysis")
 
 
 @analysis_bp.post("/uploads")
-@require_auth
+@require_admin
 def create_upload():
     uploaded_file = request.files.get("file")
     if uploaded_file is None:
@@ -25,7 +25,7 @@ def create_upload():
     if not filename or not filename.lower().endswith(".csv"):
         return jsonify({"error": "Only .csv files are accepted"}), 415
     try:
-        result, status = upload_csv(g.user_id, filename, uploaded_file.read())
+        result, status = upload_csv(g.organisation_id, filename, uploaded_file.read())
     except CsvValidationError as error:
         return jsonify({"error": str(error)}), 422
     except Exception:
@@ -37,7 +37,7 @@ def create_upload():
 @analysis_bp.get("/uploads")
 @require_auth
 def uploads():
-    result = list_uploads(g.user_id)
+    result = list_uploads(g.organisation_id)
     if result is None:
         return jsonify({"error": "Unauthorized"}), 401
     return jsonify({"uploads": result}), 200
@@ -46,7 +46,7 @@ def uploads():
 @analysis_bp.get("/uploads/<upload_id>")
 @require_auth
 def upload_detail(upload_id):
-    result = get_upload(g.user_id, upload_id)
+    result = get_upload(g.organisation_id, upload_id)
     if result is None:
         return jsonify({"error": "Upload not found"}), 404
     return jsonify(result), 200
@@ -55,7 +55,7 @@ def upload_detail(upload_id):
 @analysis_bp.post("/uploads/<upload_id>/insights")
 @require_auth
 def upload_insights(upload_id):
-    context = get_insight_context(g.user_id, upload_id)
+    context = get_insight_context(g.organisation_id, upload_id)
     if context is None:
         return jsonify({"error": "Upload not found"}), 404
     if not context:

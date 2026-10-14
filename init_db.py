@@ -29,6 +29,7 @@ USERS = {
     "properties": {
         "full_name": {"bsonType": "string"},
         "organisation_name": {"bsonType": "string"},
+        "organisation_id": {"bsonType": "objectId"},
         "email": {"bsonType": "string"},
         "password_hash": {"bsonType": "string"},
         "role": {"enum": ["ADMIN", "ANALYST", "VIEWER"]},

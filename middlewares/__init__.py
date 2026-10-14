@@ -5,6 +5,7 @@ import jwt
 from bson import ObjectId
 from flask import current_app, g, jsonify, request
 
+from controllers.user_controller import workspace_of
 from db import get_db
 
 """Auth guard: verifies application JWTs, attaches user to `flask.g`."""
@@ -51,10 +52,25 @@ def require_auth(fn):
 
         g.user_id = user_id
         g.token = token
+        g.user = user
+        g.organisation_id, g.role = workspace_of(user)
         g.user_id = claims.get("sub")
         g.token = token
         if not g.user_id:
             return jsonify({"error": "Unauthorized"}), 401
+        return fn(*args, **kwargs)
+
+    return wrapper
+
+
+def require_admin(fn):
+    """Authenticate, then reject anyone who is not the Admin of their workspace."""
+
+    @wraps(fn)
+    @require_auth
+    def wrapper(*args, **kwargs):
+        if g.role != "ADMIN":
+            return jsonify({"error": "Admin access required"}), 403
         return fn(*args, **kwargs)
 
     return wrapper

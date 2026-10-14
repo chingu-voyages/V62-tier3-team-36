@@ -62,7 +62,8 @@ const useValidationCSV = () => {
         }
       }
     } catch (error: any) {
-      if (error.response.status == 422) {
+      // 403: a Viewer reached the upload flow; show the API message instead of loading forever.
+      if (error.response.status == 422 || error.response.status == 403) {
         console.log(error.response.data);
         setError(error.response.data);
         setIsLoading(false);

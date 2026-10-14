@@ -23,14 +23,30 @@ PASSWORD_RESET_RESPONSE = {
 INVALID_RESET_TOKEN_RESPONSE = {"error": "Invalid or expired password reset token"}
 
 
-def create_user(full_name, organisation_name, email, password):
-    """Create a MongoDB user with a one-way password hash."""
+def workspace_of(user):
+    """Return the user's (organisation_id, role)."""
+    # Accounts created before workspaces existed own their data: each is the
+    # Admin of a workspace keyed by its own id.
+    if "organisation_id" not in user:
+        return user["_id"], "ADMIN"
+    return user["organisation_id"], user["role"]
+
+
+def create_user(full_name, organisation_name, email, password, organisation_id=None):
+    """Create a MongoDB user with a one-way password hash.
+
+    Signing up opens a new workspace with the user as its Admin. Passing
+    organisation_id adds a Viewer to that existing workspace instead.
+    """
+    user_id = ObjectId()
     user = {
+        "_id": user_id,
+        "organisation_id": organisation_id or user_id,
         "full_name": full_name.strip(),
         "organisation_name": organisation_name.strip(),
         "email": email.strip().lower(),
         "password_hash": generate_password_hash(password),
-        "role": "VIEWER",
+        "role": "VIEWER" if organisation_id else "ADMIN",
         "session_version": 0,
         "created_at": datetime.now(timezone.utc),
     }
@@ -58,8 +74,16 @@ def _user_payload(user):
         "full_name": user["full_name"],
         "organisation_name": user["organisation_name"],
         "email": user["email"],
-        "role": user["role"],
+        "role": workspace_of(user)[1],
     }
+
+
+def list_members(organisation_id):
+    """Return every user in the workspace, oldest (the Admin) first."""
+    members = get_db().users.find(
+        {"$or": [{"organisation_id": organisation_id}, {"_id": organisation_id}]}
+    ).sort("created_at", 1)
+    return [_user_payload(member) for member in members]
 
 
 def _create_session_token(user, token_type, expires_in):
