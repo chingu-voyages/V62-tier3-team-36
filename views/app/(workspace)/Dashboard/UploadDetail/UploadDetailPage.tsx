@@ -24,6 +24,7 @@ import { ActiveFilterChips } from "./ActiveFilterChips";
 import { RankingTable } from "./RankingTable";
 import { ErrorRow } from "./ErrorRow";
 import { Piechart } from "../../Analysis/Piechart";
+import { exportSummary } from "./exportSummary";
 
 export const UploadDetailPage = ({ params }: UploadDetailPageProps) => {
   const router = useRouter();
@@ -68,6 +69,18 @@ export const UploadDetailPage = ({ params }: UploadDetailPageProps) => {
         hasActiveFilters={hasActiveFilters}
         activeFilterChips={activeFilterChips}
         setIsFiltersOpen={setIsFiltersOpen}
+        onExport={() =>
+          exportSummary({
+            fileName: detail.file_name,
+            uploadedAt: detail.uploaded_at,
+            filters: activeFilterChips,
+            metrics: filteredMetrics,
+            categories: filteredCategoryRanking,
+            regions: filteredRegionRanking,
+            products,
+            trend: filteredTrendData,
+          })
+        }
       />
       <ActiveFilterChips
         activeFilterChips={activeFilterChips}
@@ -88,12 +101,18 @@ export const UploadDetailPage = ({ params }: UploadDetailPageProps) => {
         productOptions={productOptions}
       />
 
-      <MetricsCards
-        hasActiveFilters={hasActiveFilters}
-        revenueFilterMessage={revenueFilterMessage}
-        filteredMetrics={filteredMetrics}
-        formatRevenue={formatRevenue}
-      />
+      {detail.analysis ? (
+        <MetricsCards
+          hasActiveFilters={hasActiveFilters}
+          revenueFilterMessage={revenueFilterMessage}
+          filteredMetrics={filteredMetrics}
+          formatRevenue={formatRevenue}
+        />
+      ) : (
+        <p className="mt-4 rounded-2xl border border-gray-200/80 bg-white p-5 text-sm text-gray-500 shadow-sm">
+          No analytics are available for this upload yet.
+        </p>
+      )}
 
       <div className="mt-4">
         <RankingTable detail={detail} />
