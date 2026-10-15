@@ -52,14 +52,14 @@ export const Team = () => {
   };
 
   return (
-    <div className="px-5 pb-10 pt-5">
+    <div className="mx-auto w-full max-w-7xl px-4 pb-10 pt-5 sm:px-6 lg:px-8">
       <h2 className="text-xl font-bold tracking-tight text-[#202020]">Team</h2>
       <p className="mt-1 text-sm text-gray-500">
         Viewers can see this workspace&apos;s analytics but cannot upload data
         or manage the team.
       </p>
 
-      <ul className="mt-5 divide-y divide-gray-200 rounded-2xl border border-gray-200/80 bg-white shadow-sm">
+      <ul className="mt-5 max-w-3xl divide-y divide-gray-200 rounded-2xl border border-gray-200/80 bg-white shadow-sm">
         {members.map((member) => (
           <li
             key={member.id}

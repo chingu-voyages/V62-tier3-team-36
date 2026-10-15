@@ -6,7 +6,7 @@ const SkeletonBlock = ({ className = "" }: { className?: string }) => (
 );
 
 export const DashboardSkeleton = () => (
-  <div className="border-t border-gray-200 px-5 pb-10 pt-6">
+  <div className="mx-auto w-full max-w-7xl border-t border-gray-200 px-4 pb-10 pt-5 sm:px-6 sm:pt-6 lg:px-8">
     {/* Header */}
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="min-w-0 flex-1 space-y-2">

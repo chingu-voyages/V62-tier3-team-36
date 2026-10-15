@@ -28,8 +28,8 @@ const SignUp = () => {
   return (
     <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
       <div className="mb-6 flex items-center justify-center">
-        <Image src="/logo.svg" alt="RetailLen logo" width={32} height={32} />
-        <span className="ml-2 text-lg font-bold text-gray-900">RetailLen</span>
+        <Image src="/logo.svg" alt="RetailLens logo" width={32} height={32} />
+        <span className="ml-2 text-lg font-bold text-gray-900">RetailLens</span>
       </div>
 
       <div className="mb-1 text-2xl font-bold tracking-tight text-[#202020]">

@@ -6,10 +6,10 @@ interface AuthLayout {
 
 const WorkspaceLayout = ({ children }: AuthLayout) => {
   return (
-    <div className="flex min-h-dvh w-full flex-col md:h-dvh md:flex-row md:overflow-hidden">
+    <div className="flex min-h-dvh w-full flex-col bg-gray-50 lg:h-dvh lg:flex-row lg:overflow-hidden">
       <Sidebar />
 
-      <main className="flex min-w-0 flex-1 flex-col md:h-dvh md:overflow-y-auto">
+      <main className="min-h-0 min-w-0 flex-1 overflow-x-hidden bg-gray-50 lg:h-dvh lg:overflow-y-auto">
         {children}
       </main>
     </div>

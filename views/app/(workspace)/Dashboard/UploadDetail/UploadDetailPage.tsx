@@ -63,7 +63,7 @@ export const UploadDetailPage = ({ params }: UploadDetailPageProps) => {
   }
 
   return (
-    <div className="px-5 pb-10 pt-5 bg-[var(--white)]">
+    <div className="mx-auto w-full max-w-7xl min-w-0 px-4 pb-10 pt-5 sm:px-6 lg:px-8">
       <UploadDetailHeader
         detail={detail}
         hasActiveFilters={hasActiveFilters}

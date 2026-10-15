@@ -13,19 +13,33 @@ const CommentCard = ({
 }: CommentProps) => {
   return (
     <div
-      className={`flex max-w-[350px] flex-col col-span-1 ${isblack ? "bg-[#202020]" : "bg-white"} space-y-5 rounded-xl p-5 hover:scale-105 hover:shadow-xl`}
+      className={`flex h-full min-h-[220px] flex-col justify-between rounded-2xl border p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md ${
+        isblack
+          ? "border-[#202020] bg-[#202020]"
+          : "border-gray-200 bg-white"
+      }`}
     >
       <p
-        className={`${isblack ? "text-white" : "text-[#202020]"} text-base`}
-      >{`" ${comment} "`}</p>
-      <div className="flex flex-row items-center  space-x-3">
+        className={`text-base leading-7 ${
+          isblack ? "text-white" : "text-[#202020]"
+        }`}
+      >
+        {`"${comment}"`}
+      </p>
+
+      <div className="mt-6 flex items-center gap-3">
         <div
-          className={`w-[40px] flex h-[40px] rounded-full ${isblack ? "text-[#202020] bg-white" : "text-white  bg-[#202020]"} items-center justify-center font-bold`}
+          className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold ${
+            isblack ? "bg-white text-[#202020]" : "bg-[#202020] text-white"
+          }`}
         >
           {start_name}
         </div>
+
         <p
-          className={`${isblack ? "text-white" : "text-[#202020]"} text-sm font-bold`}
+          className={`text-sm font-semibold ${
+            isblack ? "text-white" : "text-[#202020]"
+          }`}
         >
           {full_name}
         </p>
