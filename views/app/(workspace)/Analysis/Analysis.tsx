@@ -5,13 +5,18 @@ import Link from "next/link";
 import { KPICard } from "./KPICard";
 import { Barchart } from "./Barchart";
 import { Piechart } from "./Piechart";
-
+import useAnalysis from "./hooks/useAnalysis"
 import { useUploadDetailStore } from "@/store/uploadDetailStore";
+import InsightCard from "./InsightCard";
 
-const Analysis = () => {
-  const detail = useUploadDetailStore((state) => state.detail?.analysis);
-  const uploadId = useUploadDetailStore((state) => state.detail?.upload_id);
-
+const Analysis = ({id}:{id:string}) => {
+  
+  // const uploadId = useUploadDetailStore((state) => state.detail?.upload_id);
+  const {
+   error,
+    uploadId,
+    data} = useAnalysis({id})
+  const detail = data //useUploadDetailStore((state) => state.detail?.analysis);
   return (
     <div className="flex w-full flex-col gap-6 border border-gray-200 bg-white p-5 sm:p-6">
       {/* Header */}
@@ -54,7 +59,7 @@ const Analysis = () => {
           }${Math.abs(detail?.growth ?? 0)}%`}
         />
       </section>
-
+      
       {/* Charts */}
 
       <div className="flex flex-col gap-6">
@@ -85,6 +90,11 @@ const Analysis = () => {
             layout="horizontal"
           />
         </div>
+        
+        {/* {
+          revenue_growth?<InsightCard title={revenue_growth.title} type={revenue_growth.type} description={revenue_growth.description} recommandetion={revenue_growth.recommandetion}/>:null
+        } */}
+        
         <Barchart
           title="Top Products by Revenue"
           description="Discover your best-performing products."

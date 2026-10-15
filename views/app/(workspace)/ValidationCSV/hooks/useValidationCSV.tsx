@@ -61,12 +61,14 @@ const useValidationCSV = () => {
           setUploadId(response.data.upload_id);
         }
       }
-    } catch (error: any) {
+    } catch (error:any) {
       // 403: a Viewer reached the upload flow; show the API message instead of loading forever.
-      if (error.response.status == 422 || error.response.status == 403) {
-        console.log(error.response.data);
+      if (error.response?.status == 422 || error.response?.status == 403) {
         setError(error.response.data);
         setIsLoading(false);
+      }
+      else{
+        setError({error:"Something is Wrong try Again"})
       }
     }
   }

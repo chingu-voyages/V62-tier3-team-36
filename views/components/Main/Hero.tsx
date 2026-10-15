@@ -58,7 +58,7 @@ const Hero = () => {
         </div>
         <div className="col-span-1 flex-col w-full h-[450px] max-w-[500px] bg-gray-200 rounded-xl p-5">
           <div className="bg-white h-full w-full rounded-lg p-6">
-            <div className="grid grid-cols-3 gap-3 h-[100px]">
+            <div className="grid md:grid-cols-3 sm:grid-cols-1 gap-3 h-[100px]">
               <Card title="Revenue" price="$450" percentage="+12.5%" />
               <Card title="Basket Size" price="$38" percentage="+9.2%" />
               <Card title="Stockouts" price="1.8%" percentage="-1.6%" />

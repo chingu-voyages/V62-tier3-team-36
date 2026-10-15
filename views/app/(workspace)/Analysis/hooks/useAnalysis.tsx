@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { get_list_csv } from "@/api/analysis";
+"use client"
+import { useEffect, useState } from "react";
+import { get_insight_csv, get_upload_csv } from "@/api/analysis";
 
 interface AnalysisType {
   aov?: number;
@@ -12,33 +13,63 @@ interface AnalysisType {
   revenue_trend?: [{ month: string; revenue: number }];
   top_customers?: [];
   top_products?: [{ product: string; revenue: number; units: number }];
-  total_custumers?: number;
+  total_customers?: number;
   total_orders?: number;
   total_revenue?: number;
   total_units?: number;
 }
-const useAnalysis = () => {
+interface InsightType {
+   description:string
+   type:string
+   recommandetion:string
+   title:string
+}
+const useAnalysis = ({id}:{id:string}) => {
   const [error, setError] = useState("");
   const [data, setData] = useState<AnalysisType>({});
-  async function analysis({ id }: { id: string }) {
-    try {
-      const response = await get_list_csv();
-      return response.data;
-    } catch (error: any) {
-      if (error.response.status == 401) {
-        setError("you must login to use the app");
-      } else {
-        setError("Some thing is wrong please try again");
+  const [insight,setInsight] = useState<InsightType[] >([])
+  useEffect(()=>{
+    async function insightData(){
+      try{
+        const response = await get_insight_csv(id)
+        setInsight(response.data)
       }
-      return null;
+      catch(error){
+        setError("some thing is wrong getting insight")
+      }
+
     }
-  }
+
+    async function analysis() {
+      try {
+        const response = await get_upload_csv(id);
+        setData(response.data.analysis)
+      } catch (error: any) {
+        if (error.response.status == 401) {
+          setError("you must login to use the app");
+          console.log(error)
+        } else {
+          setError("Some thing is wrong please try again");
+          console.log(error)
+        }
+        return null;
+      }
+    }
+    insightData()
+    analysis()
+
+
+  },[id])
+  
+
+
   return {
     error,
     setError,
-    analysis,
     data,
     setData,
+    uploadId:id,
+    insight
   };
 };
 

@@ -11,3 +11,7 @@ export const get_list_csv = () => {
 export const get_upload_csv = (uploadId: string) => {
   return api.get(`/api/analysis/uploads/${uploadId}`);
 };
+
+export const get_insight_csv = (uploadId: string) => {
+  return api.post(`/api/analysis/uploads/${uploadId}/insights`);
+};
