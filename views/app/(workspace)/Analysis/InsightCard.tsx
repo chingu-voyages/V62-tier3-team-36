@@ -13,18 +13,18 @@ const InsightCard = ({type,title,description,recommandetion}:InsightProps) => {
     >
       <div className="mb-5">
         <h3 className="text-base font-semibold tracking-tight text-[#202020]">
-          {type}
+          {title}
         </h3>
 
-        <p className="mt-1 text-sm leading-5 text-gray-500">{title}</p>
+        
       </div>
-      <p className="text-sm leading-5 text-gray-400">{description}</p>
+      <p className="text-sm pl-3 md:w-2xl leading-5 text-gray-400">{description}</p>
       
       <div className="flex flex-col p-3 mt-3 rounded-xl border-gray-200 ">
-        <h3 className="text-base font-semibold tracking-tight text-[#202020]">
+        <h3 className="text-base  font-semibold tracking-tight text-[#202020]">
           recommandetion
         </h3> 
-        <p className=" text-sm leading-5 text-gray-400">{recommandetion}</p>
+        <p className="md:w-2xl pl-3 pt-3 text-sm leading-5 text-gray-400">{recommandetion}</p>
       </div>
       
     </section>

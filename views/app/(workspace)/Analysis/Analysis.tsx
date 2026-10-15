@@ -15,7 +15,10 @@ const Analysis = ({id}:{id:string}) => {
   const {
    error,
     uploadId,
+    insight,
     data} = useAnalysis({id})
+  
+
   const detail = data //useUploadDetailStore((state) => state.detail?.analysis);
   return (
     <div className="flex w-full flex-col gap-6 border border-gray-200 bg-white p-5 sm:p-6">
@@ -63,6 +66,22 @@ const Analysis = ({id}:{id:string}) => {
       {/* Charts */}
 
       <div className="flex flex-col gap-6">
+
+        {
+            insight.length > 0 ? insight.slice(0,3).map((item,key)=>{
+                return <InsightCard type={item.type} title={item.title} description={item.description} recommandetion={item.recommendation} key={key}/>
+           }):
+           <div className={`min-w-0 rounded-2xl border border-gray-200/80 bg-white p-5 shadow-sm transition-shadow duration-200 hover:shadow-md `}>
+            <div className="mb-5">
+              <h3 className="text-base font-semibold tracking-tight text-[#202020]">
+                 AI Insight And Recommendation
+              </h3>
+            </div>
+              <div className="flex h-[160px] items-center justify-center text-sm text-gray-400">
+                  No data available
+              </div>
+           </div>
+        }
         <Barchart
           title="Revenue by Category"
           description="Compare revenue across product categories."
@@ -91,9 +110,7 @@ const Analysis = ({id}:{id:string}) => {
           />
         </div>
         
-        {/* {
-          revenue_growth?<InsightCard title={revenue_growth.title} type={revenue_growth.type} description={revenue_growth.description} recommandetion={revenue_growth.recommandetion}/>:null
-        } */}
+        
         
         <Barchart
           title="Top Products by Revenue"
@@ -112,7 +129,25 @@ const Analysis = ({id}:{id:string}) => {
           barDataKey="revenue"
           layout="horizontal"
         />
+         {
+        insight.length > 0 ? insight.slice(3,insight.length).map((item,key)=>{
+          return <InsightCard type={item.type} title={item.title} description={item.description} recommandetion={item.recommendation} key={key} />
+        })
+        :
+        <div className={`min-w-0 rounded-2xl border border-gray-200/80 bg-white p-5 shadow-sm transition-shadow duration-200 hover:shadow-md `}>
+            <div className="mb-5">
+              <h3 className="text-base font-semibold tracking-tight text-[#202020]">
+                 AI Insight And Recommendation
+              </h3>
+            </div>
+              <div className="flex h-[160px] items-center justify-center text-sm text-gray-400">
+                  No data available
+              </div>
+           </div>
+
+      }
       </div>
+     
     </div>
   );
 };

@@ -21,43 +21,62 @@ interface AnalysisType {
 interface InsightType {
    description:string
    type:string
-   recommandetion:string
+   recommendation:string
    title:string
 }
+
 const useAnalysis = ({id}:{id:string}) => {
-  const [error, setError] = useState("");
-  const [data, setData] = useState<AnalysisType>({});
-  const [insight,setInsight] = useState<InsightType[] >([])
+const [error, setError] = useState("");
+const [data, setData] = useState<AnalysisType>({});
+const [insight,setInsight] = useState<InsightType[]>([])
   useEffect(()=>{
-  //   async function insightData(){
-  //     try{
-  //       const response = await get_insight_csv(id)
-  //       setInsight(response.data)
-  //     }
-  //     catch(error){
-  //       setError("some thing is wrong getting insight")
-  //     }
+    let isCancelled = false
+    async function insightData(){
+      try{
+        const response = await get_insight_csv(id)
+        if(!isCancelled && response.data.length > 0){
+          setInsight(response.data)
+          console.log(response.data)
+        }
+        
+      }
+      catch(error){
+        if(!isCancelled){
 
-  //   }
+          setError("some thing is wrong getting insight")
+        }
+      }
 
+    }
+    
     async function analysis() {
       try {
         const response = await get_upload_csv(id);
-        setData(response.data.analysis)
-      } catch (error: any) {
-        if (error.response.status == 401) {
-          setError("you must login to use the app");
-          console.log(error)
-        } else {
-          setError("Some thing is wrong please try again");
-          console.log(error)
+        if(!isCancelled){
+            setData(response.data.analysis)
         }
-        return null;
+        
+      } catch (error: any) {
+        if(!isCancelled){
+
+          if (error.response.status == 401) {
+            setError("you must login to use the app");
+            console.log(error)
+          } else {
+            setError("Some thing is wrong please try again");
+            console.log(error)
+          }
+          return null;
+        }
       }
     }
-    // insightData()
+    
     analysis()
-
+    insightData()
+    
+    return ()=>{
+      isCancelled = true
+    }
 
   },[id])
   
