@@ -29,16 +29,16 @@ const useAnalysis = ({id}:{id:string}) => {
   const [data, setData] = useState<AnalysisType>({});
   const [insight,setInsight] = useState<InsightType[] >([])
   useEffect(()=>{
-    async function insightData(){
-      try{
-        const response = await get_insight_csv(id)
-        setInsight(response.data)
-      }
-      catch(error){
-        setError("some thing is wrong getting insight")
-      }
+  //   async function insightData(){
+  //     try{
+  //       const response = await get_insight_csv(id)
+  //       setInsight(response.data)
+  //     }
+  //     catch(error){
+  //       setError("some thing is wrong getting insight")
+  //     }
 
-    }
+  //   }
 
     async function analysis() {
       try {
@@ -55,7 +55,7 @@ const useAnalysis = ({id}:{id:string}) => {
         return null;
       }
     }
-    insightData()
+    // insightData()
     analysis()
 
 
