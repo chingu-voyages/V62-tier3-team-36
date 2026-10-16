@@ -1,5 +1,8 @@
 # RetailLens
 ![alt text](image.png)
+
+**Live demo:** [RetailLens](https://retail-sass.netlify.app/)
+
 RetailLens is a sales analytics dashboard for retail teams. Upload a sales CSV
 to turn order-level data into clear performance metrics and visualizations. Teams can review revenue, products, categories, regions,
 and customer segments in one place. An optional AI insights API can help
