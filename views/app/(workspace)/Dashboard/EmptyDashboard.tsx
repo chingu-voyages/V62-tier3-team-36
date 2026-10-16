@@ -7,7 +7,7 @@ export const EmptyDashboard = () => {
   const { isModalOpen, setIsModalOpen } = useDashboard();
 
   return (
-    <div className="flex min-h-full flex-1 flex-col border-t border-gray-200 bg-white px-5 pb-10 pt-6">
+    <div className="flex min-h-full w-full flex-1 flex-col border-t border-gray-200 bg-white px-4 pb-10 pt-5 sm:px-6 sm:pt-6 lg:px-8">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">

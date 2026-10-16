@@ -12,27 +12,38 @@ export const ForgotPassword = () => {
     useForgotPassword();
 
   return (
-    <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
-      <div className="flex items-center mb-4 justify-center">
-        <Image src="/logo.svg" alt="Logo" width={32} height={32} />
-        <span className="ml-2 text-lg font-bold">RetailLen</span>
+    <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-8">
+      <div className="mb-6 flex items-center justify-center">
+        <Image src="/logo.svg" alt="RetailLens logo" width={32} height={32} />
+        <span className="ml-2 text-lg font-bold tracking-tight text-[#202020]">
+          RetailLens
+        </span>
       </div>
-      <div className="font-bold mt-[20px] text-[24px] text-[#202020]">
-        Forgot Password
-      </div>
-      <div className="mt-[8px] mb-[22px] text-[#6F6F6F] text-[14px] font-light">
+
+      <h1 className="text-2xl font-bold tracking-tight text-[#202020]">
+        Forgot password?
+      </h1>
+      <p className="mb-6 mt-2 text-sm leading-6 text-gray-500">
         Enter your email and we will send you a secure reset link.
-      </div>
-      <form onSubmit={handleSubmit} className="space-y-[12px] w-full">
-        {error ? (
+      </p>
+
+      <form onSubmit={handleSubmit} className="w-full space-y-4">
+        {error && (
           <div
-            className="p-[10px] border-[0.8px] border-[#202020] bg-[#E0E0E0] text-[#202020] text-xs w-full"
+            className="w-full rounded-xl border border-red-200 bg-red-50 p-3 text-sm leading-5 text-red-700"
             role="alert"
           >
             {error}
           </div>
-        ) : null}
-        {message ? <p role="status">{message}</p> : null}
+        )}
+        {message && (
+          <p
+            role="status"
+            className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm leading-5 text-emerald-700"
+          >
+            {message}
+          </p>
+        )}
         <Input
           value={email}
           setValue={setEmail}
@@ -48,7 +59,7 @@ export const ForgotPassword = () => {
           text={isLoading ? "Sending..." : "Continue"}
         />
       </form>
-      <div className="border-t border-gray-100 pt-5 text-center">
+      <div className="mt-6 border-t border-gray-100 pt-5 text-center">
         <Link
           href="/SignIn"
           className="text-sm font-medium text-gray-500 transition-colors hover:text-[#222222] focus-visible:outline-none focus-visible:underline"

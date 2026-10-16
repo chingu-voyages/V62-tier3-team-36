@@ -21,7 +21,7 @@ export default function Sidebar() {
   return (
     <>
       {/* Mobile top bar */}
-      <header className="sticky top-0 z-50 flex w-full shrink-0 items-center justify-between border-b border-gray-200 bg-white px-4 py-3 dark:border-white/[.145] dark:bg-black md:hidden">
+      <header className="sticky top-0 z-50 flex w-full shrink-0 items-center justify-between border-b border-gray-200 bg-white px-4 py-3 dark:border-white/[.145] dark:bg-black lg:hidden">
         <Link href="/" className="flex items-center gap-2">
           <Image src="/logo.svg" alt="RetailLen" width={32} height={32} />
           <span className="text-lg font-bold">RetailLen</span>
@@ -32,7 +32,7 @@ export default function Sidebar() {
           aria-label={mobileOpen ? "Close menu" : "Open menu"}
           aria-expanded={mobileOpen}
           onClick={() => setMobileOpen((value) => !value)}
-          className="rounded-xl border border-gray-200 px-3 py-2 text-sm font-medium transition-colors hover:bg-gray-100 dark:border-white/[.145] dark:hover:bg-white/[.08]"
+          className="rounded-xl border border-gray-200 px-3 py-2 text-sm font-medium transition-colors hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2 dark:border-white/[.145] dark:hover:bg-white/[.08]"
         >
           {mobileOpen ? "Close" : "Menu"}
         </button>
@@ -45,12 +45,12 @@ export default function Sidebar() {
             type="button"
             aria-label="Close navigation menu"
             onClick={() => setMobileOpen(false)}
-            className="fixed inset-0 z-40 bg-black/30 md:hidden"
+            className="fixed inset-0 z-40 bg-black/30 lg:hidden"
           />
 
           <nav
             aria-label="Platform"
-            className="fixed inset-x-0 top-[57px] z-50 max-h-[calc(100dvh-57px)] overflow-y-auto border-b border-gray-200 bg-white p-4 shadow-lg dark:border-white/[.145] dark:bg-black md:hidden"
+            className="fixed inset-x-0 top-[57px] z-50 max-h-[calc(100dvh-57px)] overflow-y-auto border-b border-gray-200 bg-white p-4 shadow-lg dark:border-white/[.145] dark:bg-black lg:hidden"
           >
             <ul className="flex flex-col gap-1">
               {visibleNavItems.map((item) => {
@@ -94,9 +94,9 @@ export default function Sidebar() {
         </>
       )}
 
-      {/* Desktop and tablet sidebar */}
+      {/* Desktop sidebar */}
       <aside
-        className={`sticky top-0 hidden h-dvh shrink-0 flex-col overflow-y-auto border-r border-gray-200 bg-white dark:border-white/[.145] dark:bg-black md:flex md:w-16 ${
+        className={`sticky top-0 hidden h-dvh shrink-0 flex-col overflow-y-auto border-r border-gray-200 bg-white dark:border-white/[.145] dark:bg-black lg:flex ${
           collapsed ? "lg:w-20" : "lg:w-64"
         }`}
       >

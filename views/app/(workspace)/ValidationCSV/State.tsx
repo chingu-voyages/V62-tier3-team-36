@@ -1,19 +1,14 @@
-import React from 'react'
-
-interface StatusProps{
-
-    validation_type:string
+interface StatusProps {
+  validation_type: string;
 }
-const Status = ({validation_type}:StatusProps) => {
-      
+
+const Status = ({ validation_type }: StatusProps) => {
   return (
-    <div className="flex flex-row justify-between items-center border-b">
-        <div className="flex flex-row gap-3 my-[13px] ">
-            <div className={` ml-[10px] w-[20px] h-[20px] rounded-full bg-gray-300 border-[1.6] border-[#202020]`}></div>
-            <p className="text-sm mr-[10px]">{validation_type}</p>  
-        </div>
+    <div className="flex items-center gap-3 px-4 py-3 text-sm text-[#202020]">
+      <span className="h-2.5 w-2.5 rounded-full bg-[#202020]" aria-hidden="true" />
+      <p className="leading-6">{validation_type}</p>
     </div>
-  )
-}
+  );
+};
 
-export default Status
+export default Status;

@@ -1,33 +1,85 @@
-import Link from 'next/link'
-import React from 'react'
+import Image from "next/image";
+import Link from "next/link";
 
 const Footer = () => {
   return (
-    <div className='pl-20 p-15 border-t border-gray-500 grid grid-cols-2 md:grid-cols-4 gap-6'>
-        <div className='flex flex-col'>
-            <div className='font-bold'>Logo</div>
-            <p className='text-sm text-gray-500'>Retail analytics for operators who'd rather know than guess.</p>
-        </div>
-        <div className='flex flex-col spacey-5'>
-            <p className='font-bold text-[#202020] md:text-base text-sm'>Product</p>
-            <Link href={"#feature"} className='text-gray-500 md:text-base text-sm'>Feature</Link>
-            <Link href={"#"} className='text-gray-500 md:text-base text-sm'>Integrations</Link>
-            <Link href={"#"} className='text-gray-500 md:text-base text-sm'>Changelog</Link>
-        </div>
-        <div className='flex flex-col spacey-5'>
-            <p className='font-bold text-[#202020] md:text-base text-sm'>Company</p>
-            <Link href="#" className='text-gray-500 md:text-base text-sm'>About</Link>
-            <Link href={"#"} className='text-gray-500 md:text-base text-sm'>Blogs</Link>
-            <Link href={"#"} className='text-gray-500 md:text-base text-sm'>Contact</Link>
-        </div>
-        <div className='flex flex-col spacey-5'>
-            <p className='font-bold text-[#202020] md:text-base text-sm'>Legal</p>
-            <Link href={"#"} className='text-gray-500 md:text-base text-sm'>Privacy</Link>
-            <Link href={"#"} className='text-gray-500 md:text-base text-sm'>Terms</Link>
-            <Link href={"#"} className='text-gray-500 md:text-base text-sm'>Security</Link>
-        </div>
-    </div>
-  )
-}
+    <footer className="border-t border-gray-200 bg-[#f8f8f7]">
+      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-[1.5fr_0.8fr_0.8fr_0.8fr]">
+          <div className="max-w-md">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#202020] p-1 shadow-sm">
+                <Image
+                  src="/logo.svg"
+                  alt="RetailLens logo"
+                  width={26}
+                  height={26}
+                  className="h-6 w-6"
+                />
+              </div>
 
-export default Footer
+              <div>
+                <p className="text-lg font-bold tracking-tight text-[#202020]">
+                  RetailLens
+                </p>
+              </div>
+            </div>
+
+            <p className="mt-4 text-sm leading-6 text-gray-500">
+              Retail analytics for operators who want clearer decisions, faster
+              answers, and fewer spreadsheet surprises.
+            </p>
+
+            <div className="mt-5 flex flex-wrap gap-3">
+              <Link
+                href="/SignUp"
+                className="inline-flex h-10 items-center justify-center rounded-xl bg-[#202020] px-4 text-sm font-medium text-white transition-all duration-200 hover:bg-gray-700"
+              >
+                Start free
+              </Link>
+            </div>
+          </div>
+
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.15em] text-gray-500">
+              Product
+            </p>
+
+            <ul className="mt-4 space-y-3 text-sm text-gray-600">
+              <li>
+                <Link
+                  href="#feature"
+                  className="transition-colors hover:text-[#202020]"
+                >
+                  Features
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="#insite"
+                  className="transition-colors hover:text-[#202020]"
+                >
+                  Results
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="#reviews"
+                  className="transition-colors hover:text-[#202020]"
+                >
+                  Reviews
+                </Link>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="mt-10 flex flex-col gap-3 border-t border-gray-200 pt-5 text-sm text-gray-500 sm:flex-row sm:items-center sm:justify-between">
+          <p>© 2026 RetailLens. All rights reserved.</p>
+        </div>
+      </div>
+    </footer>
+  );
+};
+
+export default Footer;

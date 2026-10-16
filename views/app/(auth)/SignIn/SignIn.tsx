@@ -24,13 +24,13 @@ export const SignIn = () => {
       <div className="mb-8 flex items-center justify-center gap-2">
         <Image
           src="/logo.svg"
-          alt="RetailLen logo"
+          alt="RetailLens logo"
           width={34}
           height={34}
           priority
         />
         <span className="text-xl font-bold tracking-tight text-[#222222]">
-          RetailLen
+          RetailLens
         </span>
       </div>
 

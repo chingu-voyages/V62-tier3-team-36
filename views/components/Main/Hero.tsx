@@ -12,62 +12,64 @@ const Hero = () => {
   const user = useAuthStore((state) => state.user);
 
   return (
-    <section className="w-full h-full flex flex-col  mt-10">
-      <div className="w-full grid lg:grid-cols-2 grid-cols-1 justify-items-center gap-5 h-full p-15 px-20">
-        <div className="col-span-1 flex flex-col space-y-5 max-w-[380px] md:max-w-[500px]">
-          <p className="md:text-7xl text-5xl font-bold w-md">
-            <span className="text-[#202020]">
-              Every shelf,
-              <br />
-              measured.
-            </span>
-            <br />
-            <span className="text-gray-400">
+    <section className="w-full py-8 sm:py-10 lg:py-12">
+      <div className="mx-auto grid max-w-7xl gap-8 px-4 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:px-8">
+        <div className="flex flex-col items-start justify-center">
+          <p className="text-4xl font-bold tracking-tight text-[#202020] sm:text-5xl lg:text-7xl">
+            <span className="block">Every shelf,</span>
+            <span className="mt-1 block text-gray-400">measured.</span>
+            <span className="mt-3 block text-[#202020] sm:mt-4">
               Every sale,
-              <br /> decoded.
             </span>
+            <span className="mt-1 block text-gray-400">decoded.</span>
           </p>
-          <p className=" text-lg font-serif text-gray-400 text-justify ">
+
+          <p className="mt-6 max-w-xl text-base leading-7 text-gray-500 sm:text-lg">
             Send us your CSV. We analyze it with the pandas library and tell you
             the real insights hiding in your data — trends, outliers and the
             full analysis, in plain language.
           </p>
-          <div className="flex space-x-3">
+
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             {user ? (
               <Link
                 href="/Dashboard"
-                className=" p-3 w-[200px]  bg-[#202020] font-bold text-lg rounded-xl text-white text-center hover:bg-gray-800 hover:scale-105 "
+                className="inline-flex h-12 items-center justify-center rounded-xl bg-[#202020] px-6 text-base font-semibold text-white shadow-sm transition-all duration-200 hover:bg-gray-800 hover:shadow-md"
               >
                 Go to dashboard
               </Link>
             ) : (
               <Link
                 href="/SignUp"
-                className=" p-3 w-[200px]  bg-[#202020] font-bold text-lg rounded-xl text-white text-center hover:bg-gray-800 hover:scale-105 "
+                className="inline-flex h-12 items-center justify-center rounded-xl bg-[#202020] px-6 text-base font-semibold text-white shadow-sm transition-all duration-200 hover:bg-gray-800 hover:shadow-md"
               >
                 Sign up now
               </Link>
             )}
+
             <Link
               href={user ? "/UploadCSV" : "/SignIn"}
-              className=" p-3 w-[200px]  bg-white font-bold text-lg rounded-xl  text-center  "
+              className="inline-flex h-12 items-center justify-center rounded-xl border border-gray-200 bg-white px-6 text-base font-semibold text-[#202020] shadow-sm transition-all duration-200 hover:border-gray-300 hover:bg-gray-50"
             >
               Upload Your CSV
             </Link>
           </div>
         </div>
-        <div className="col-span-1 flex-col w-full h-[450px] max-w-[500px] bg-gray-200 rounded-xl p-5">
-          <div className="bg-white h-full w-full rounded-lg p-6">
-            <div className="grid grid-cols-3 gap-3 h-[100px]">
+
+        <div className="w-full rounded-[28px] border border-gray-200 bg-gray-100 p-4 shadow-sm sm:p-5">
+          <div className="rounded-[22px] bg-white p-4 sm:p-6">
+            <div className="grid gap-3 sm:grid-cols-3">
               <Card title="Revenue" price="$450" percentage="+12.5%" />
               <Card title="Basket Size" price="$38" percentage="+9.2%" />
               <Card title="Stockouts" price="1.8%" percentage="-1.6%" />
             </div>
-            <div className="flex flex-col p-3 w-full space-y-4 rounded-xl mt-3 ">
-              <p className="text-base font-serif text-gray-500">
+
+            <div className="mt-5 rounded-2xl border border-gray-200 bg-gray-50 p-4">
+              <p className="text-base font-medium text-gray-500">
                 Monthly sales by category
               </p>
-              <div className="flex flex-row justify-center ">
+
+              <div className="mt-4 flex items-center justify-center gap-4">
                 <PieChart />
                 <div className="hidden md:block">
                   <SimpleBarChart />

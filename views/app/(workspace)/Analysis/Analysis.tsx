@@ -13,7 +13,7 @@ const Analysis = () => {
   const uploadId = useUploadDetailStore((state) => state.detail?.upload_id);
 
   return (
-    <div className="flex w-full flex-col gap-6 border border-gray-200 bg-white p-5 sm:p-6">
+    <div className="mx-auto flex w-full max-w-7xl min-w-0 flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
