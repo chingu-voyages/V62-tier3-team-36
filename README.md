@@ -3,6 +3,15 @@
 
 **Live demo:** [RetailLens](https://retail-sass.netlify.app/)
 
+![Next.js](https://img.shields.io/badge/Next.js-16.3-black?style=flat-square&logo=next.js)
+![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=black)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3-3776AB?style=flat-square&logo=python&logoColor=white)
+![Flask](https://img.shields.io/badge/Flask-3.1-000000?style=flat-square&logo=flask)
+![MongoDB](https://img.shields.io/badge/MongoDB-PyMongo-47A248?style=flat-square&logo=mongodb&logoColor=white)
+![OpenRouter](https://img.shields.io/badge/AI-OpenRouter-6366F1?style=flat-square)
+
 RetailLens is a sales analytics dashboard for retail teams. Upload a sales CSV
 to turn order-level data into clear performance metrics and visualizations. Teams can review revenue, products, categories, regions,
 and customer segments in one place. An optional AI insights API can help
