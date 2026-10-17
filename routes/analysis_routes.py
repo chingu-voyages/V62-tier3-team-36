@@ -5,8 +5,11 @@ from werkzeug.utils import secure_filename
 from controllers.analysis_controller import (
     CsvValidationError,
     get_insight_context,
+    get_saved_insight_record,
+    get_saved_insights,
     get_upload,
     list_uploads,
+    save_upload_insights,
     upload_csv,
 )
 from middlewares import require_admin, require_auth
@@ -55,6 +58,23 @@ def upload_detail(upload_id):
 @analysis_bp.post("/uploads/<upload_id>/insights")
 @require_auth
 def upload_insights(upload_id):
+    try:
+        saved = get_saved_insight_record(g.organisation_id, upload_id)
+    except Exception:
+        current_app.logger.exception("Saved AI insights could not be loaded")
+        return jsonify({"error": "AI insights could not be loaded"}), 500
+    if saved is not None:
+        return jsonify(saved["ai_insights"]), 200
+    return _generate_upload_insights(upload_id)
+
+
+@analysis_bp.post("/uploads/<upload_id>/insights/regenerate")
+@require_auth
+def regenerate_upload_insights(upload_id):
+    return _generate_upload_insights(upload_id)
+
+
+def _generate_upload_insights(upload_id):
     context = get_insight_context(g.organisation_id, upload_id)
     if context is None:
         return jsonify({"error": "Upload not found"}), 404
@@ -74,4 +94,22 @@ def upload_insights(upload_id):
     except OpenRouterError:
         current_app.logger.exception("OpenRouter insights request failed")
         return jsonify({"error": "AI insights could not be generated"}), 502
+    try:
+        save_upload_insights(g.organisation_id, upload_id, insights)
+    except Exception:
+        current_app.logger.exception("Generated AI insights could not be saved")
+        return jsonify({"error": "AI insights could not be saved"}), 500
+    return jsonify(insights), 200
+
+
+@analysis_bp.get("/uploads/<upload_id>/insights")
+@require_auth
+def saved_upload_insights(upload_id):
+    try:
+        insights = get_saved_insights(g.organisation_id, upload_id)
+    except Exception:
+        current_app.logger.exception("Saved AI insights could not be loaded")
+        return jsonify({"error": "AI insights could not be loaded"}), 500
+    if insights is None:
+        return jsonify({"error": "Upload not found"}), 404
     return jsonify(insights), 200

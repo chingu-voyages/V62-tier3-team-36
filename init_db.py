@@ -146,6 +146,20 @@ ANALYSIS_SUMMARIES = {
         "top_customers": {"bsonType": "array"},
         "total_profit": {"bsonType": ["double", "int", "decimal", "null"]},
         "profit_margin": {"bsonType": ["double", "int", "decimal", "null"]},
+        "ai_insights": {
+            "bsonType": "array",
+            "items": {
+                "bsonType": "object",
+                "required": ["type", "title", "description", "recommendation"],
+                "properties": {
+                    "type": {"bsonType": "string"},
+                    "title": {"bsonType": "string"},
+                    "description": {"bsonType": "string"},
+                    "recommendation": {"bsonType": "string"},
+                },
+            },
+        },
+        "ai_insights_generated_at": {"bsonType": "date"},
         "generated_at": {"bsonType": "date"},
     },
 }

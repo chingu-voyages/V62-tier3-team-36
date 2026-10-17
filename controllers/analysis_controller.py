@@ -342,6 +342,65 @@ def get_insight_context(organisation_id, upload_id):
     return context
 
 
+def get_saved_insights(organisation_id, upload_id):
+    """Return saved insights for an upload, or None when it is not accessible."""
+    saved = get_saved_insight_record(organisation_id, upload_id)
+    if saved is None:
+        try:
+            owner_id, parsed_upload_id = ObjectId(organisation_id), ObjectId(upload_id)
+        except (InvalidId, TypeError, ValueError):
+            return None
+
+        upload = get_db().csv_uploads.find_one({
+            "_id": parsed_upload_id,
+            **_scope(owner_id),
+            "status": "COMPLETED",
+        })
+        return [] if upload is not None else None
+    return saved["ai_insights"]
+
+
+def get_saved_insight_record(organisation_id, upload_id):
+    """Return the saved insight document for an accessible upload, if present."""
+    try:
+        owner_id, parsed_upload_id = ObjectId(organisation_id), ObjectId(upload_id)
+    except (InvalidId, TypeError, ValueError):
+        return None
+
+    db = get_db()
+    upload = db.csv_uploads.find_one({
+        "_id": parsed_upload_id,
+        **_scope(owner_id),
+        "status": "COMPLETED",
+    })
+    if upload is None:
+        return None
+
+    summary = db.analysis_summaries.find_one({
+        "csv_upload_id": parsed_upload_id,
+        **_scope(owner_id),
+    })
+    if summary is None or not isinstance(summary.get("ai_insights"), list):
+        return None
+    return summary
+
+
+def save_upload_insights(organisation_id, upload_id, insights):
+    """Persist the latest generated insights on the upload's summary document."""
+    owner_id, parsed_upload_id = ObjectId(organisation_id), ObjectId(upload_id)
+    result = get_db().analysis_summaries.update_one(
+        {"csv_upload_id": parsed_upload_id, **_scope(owner_id)},
+        {
+            "$set": {
+                "ai_insights": insights,
+                "ai_insights_generated_at": datetime.now(timezone.utc),
+            }
+        },
+    )
+    if result.matched_count != 1:
+        raise RuntimeError("Analysis summary was not found for generated insights")
+
+
 def _serialize_upload(upload):
     return {
         "upload_id": str(upload["_id"]),

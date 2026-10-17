@@ -6,14 +6,18 @@ from unittest.mock import patch
 from urllib.error import HTTPError
 
 import jwt
+import mongomock
 import pytest
 from bson import ObjectId
 
 from app import create_app
+from db import get_db
 from controllers.analysis_controller import (
     build_summary,
     get_insight_context,
+    get_saved_insights,
     parse_sales_csv,
+    save_upload_insights,
     upload_csv,
 )
 from services.openrouter_service import OpenRouterError, generate_insights
@@ -105,6 +109,52 @@ def test_analysis_routes_require_an_access_token():
     assert [response.status_code for response in responses] == [401, 401, 401, 401]
 
 
+def test_upload_detail_route_returns_saved_dashboard_analysis():
+    app = create_app(TestConfig)
+    client = app.test_client()
+    upload = {
+        "upload_id": "507f1f77bcf86cd799439012",
+        "file_name": "sales.csv",
+        "status": "COMPLETED",
+        "analysis": {
+            "total_customers": 2,
+            "total_units": 8,
+            "profit_margin": 25.0,
+            "growth": 10.0,
+            "revenue_by_category": [
+                {"category": "Hardware", "revenue": 100.0, "units": 8}
+            ],
+            "revenue_by_segment": [
+                {"customer_segment": "VIP", "revenue": 100.0, "units": 8}
+            ],
+            "revenue_by_region": [
+                {"region": "North", "revenue": 100.0, "units": 8}
+            ],
+            "top_products": [
+                {"product": "Widget", "revenue": 100.0, "units": 8}
+            ],
+            "top_customers": [
+                {"customer_id": "customer-1", "revenue": 100.0, "units": 8}
+            ],
+        },
+    }
+    user_db = SimpleNamespace(
+        users=SimpleNamespace(find_one=lambda query: {"_id": query["_id"]})
+    )
+
+    with (
+        patch("middlewares.get_db", return_value=user_db),
+        patch("routes.analysis_routes.get_upload", return_value=upload),
+    ):
+        response = client.get(
+            "/api/analysis/uploads/507f1f77bcf86cd799439012",
+            headers={"Authorization": f"Bearer {_token()}"},
+        )
+
+    assert response.status_code == 200
+    assert response.get_json()["analysis"] == upload["analysis"]
+
+
 def test_insights_route_generates_ai_insights_for_the_selected_upload():
     app = create_app(TestConfig)
     client = app.test_client()
@@ -115,7 +165,9 @@ def test_insights_route_generates_ai_insights_for_the_selected_upload():
 
     with (
         patch("middlewares.get_db", return_value=user_db),
+        patch("routes.analysis_routes.get_saved_insight_record", return_value=None),
         patch("routes.analysis_routes.get_insight_context", return_value=context),
+        patch("routes.analysis_routes.save_upload_insights") as save,
         patch(
             "routes.analysis_routes.generate_insights",
             return_value=[{
@@ -127,7 +179,7 @@ def test_insights_route_generates_ai_insights_for_the_selected_upload():
         ) as generate,
     ):
         response = client.post(
-            "/api/analysis/uploads/507f1f77bcf86cd799439011/insights",
+            "/api/analysis/uploads/507f1f77bcf86cd799439012/insights",
             headers={"Authorization": f"Bearer {_token()}"},
         )
 
@@ -140,6 +192,159 @@ def test_insights_route_generates_ai_insights_for_the_selected_upload():
         }]
     generate.assert_called_once_with(
         context, api_key="test-openrouter-key", model="test/model"
+    )
+    save.assert_called_once_with(
+        ObjectId("507f1f77bcf86cd799439011"),
+        "507f1f77bcf86cd799439012",
+        response.get_json(),
+    )
+
+
+def test_saved_insights_route_returns_persisted_insights():
+    app = create_app(TestConfig)
+    client = app.test_client()
+    insights = [{
+        "type": "trend",
+        "title": "Revenue increased",
+        "description": "Revenue grew compared with the previous period.",
+        "recommendation": "Maintain inventory for the strongest categories.",
+    }]
+    user_db = SimpleNamespace(
+        users=SimpleNamespace(find_one=lambda query: {"_id": query["_id"]})
+    )
+
+    with (
+        patch("middlewares.get_db", return_value=user_db),
+        patch("routes.analysis_routes.get_saved_insights", return_value=insights),
+    ):
+        response = client.get(
+            "/api/analysis/uploads/507f1f77bcf86cd799439011/insights",
+            headers={"Authorization": f"Bearer {_token()}"},
+        )
+
+    assert response.status_code == 200
+    assert response.get_json() == insights
+
+
+def test_insights_are_saved_and_reused_without_another_provider_call():
+    class MongoTestConfig(TestConfig):
+        MONGO_CLIENT_CLASS = mongomock.MongoClient
+        MONGO_DB_NAME = "ai_insights_persistence_test"
+
+    app = create_app(MongoTestConfig)
+    client = app.test_client()
+    owner_id = ObjectId("507f1f77bcf86cd799439011")
+    upload_id = ObjectId("507f1f77bcf86cd799439012")
+    generated = [{
+        "type": "trend",
+        "title": "Revenue increased",
+        "description": "Revenue grew compared with the previous period.",
+        "recommendation": "Maintain inventory for the strongest categories.",
+    }]
+
+    with app.app_context():
+        database = get_db()
+        database.users.insert_one({"_id": owner_id})
+        database.csv_uploads.insert_one({
+            "_id": upload_id,
+            "user_id": owner_id,
+            "file_name": "sales.csv",
+            "status": "COMPLETED",
+            "valid_rows": 1,
+            "invalid_rows": 0,
+            "uploaded_at": datetime.now(timezone.utc),
+        })
+        database.analysis_summaries.insert_one({
+            "csv_upload_id": upload_id,
+            "user_id": owner_id,
+            "total_revenue": 100,
+            "top_customers": [],
+        })
+
+    auth_headers = {"Authorization": f"Bearer {_token(str(owner_id))}"}
+    insights_url = f"/api/analysis/uploads/{upload_id}/insights"
+    with patch("routes.analysis_routes.generate_insights", return_value=generated) as generate:
+        first_generation = client.post(insights_url, headers=auth_headers)
+        retrieval = client.get(insights_url, headers=auth_headers)
+        repeated_generation = client.post(insights_url, headers=auth_headers)
+
+    assert first_generation.status_code == 200
+    assert retrieval.status_code == 200
+    assert repeated_generation.status_code == 200
+    assert first_generation.get_json() == generated
+    assert retrieval.get_json() == generated
+    assert repeated_generation.get_json() == generated
+    generate.assert_called_once()
+
+    with app.app_context():
+        saved = get_db().analysis_summaries.find_one({
+            "user_id": owner_id,
+            "csv_upload_id": upload_id,
+        })
+        assert saved["ai_insights"] == generated
+        assert isinstance(saved["ai_insights_generated_at"], datetime)
+        app.extensions["mongo_client"].close()
+
+
+def test_generated_insights_are_saved_and_retrievable_for_their_upload():
+    owner_id = ObjectId("507f1f77bcf86cd799439011")
+    upload_id = ObjectId("507f1f77bcf86cd799439012")
+    insights = [{
+        "type": "trend",
+        "title": "Revenue increased",
+        "description": "Revenue grew compared with the previous period.",
+        "recommendation": "Maintain inventory for the strongest categories.",
+    }]
+
+    class Collection:
+        def __init__(self, documents=None):
+            self.documents = documents or []
+
+        def find_one(self, query):
+            return next(
+                (
+                    document
+                    for document in self.documents
+                    if all(document.get(key) == value for key, value in query.items())
+                ),
+                None,
+            )
+
+        def update_one(self, query, update, upsert=False):
+            document = self.find_one(query)
+            if document is None:
+                if not upsert:
+                    return SimpleNamespace(matched_count=0)
+                document = dict(query)
+                self.documents.append(document)
+            document.update(update["$set"])
+            return SimpleNamespace(matched_count=1)
+
+    fake_db = SimpleNamespace(
+        csv_uploads=Collection([{
+            "_id": upload_id,
+            "user_id": owner_id,
+            "status": "COMPLETED",
+        }]),
+        analysis_summaries=Collection([{
+            "csv_upload_id": upload_id,
+            "user_id": owner_id,
+            "total_revenue": 100,
+        }]),
+    )
+
+    with patch("controllers.analysis_controller.get_db", return_value=fake_db):
+        save_upload_insights(str(owner_id), str(upload_id), insights)
+        retrieved = get_saved_insights(str(owner_id), str(upload_id))
+
+    assert retrieved == insights
+    assert len(fake_db.analysis_summaries.documents) == 1
+    assert fake_db.analysis_summaries.documents[0]["user_id"] == owner_id
+    assert fake_db.analysis_summaries.documents[0]["csv_upload_id"] == upload_id
+    assert fake_db.analysis_summaries.documents[0]["ai_insights"] == insights
+    assert isinstance(
+        fake_db.analysis_summaries.documents[0]["ai_insights_generated_at"],
+        datetime,
     )
 
 
@@ -154,6 +359,7 @@ def test_insights_route_reports_missing_openrouter_configuration():
     )
     with (
         patch("middlewares.get_db", return_value=user_db),
+        patch("routes.analysis_routes.get_saved_insight_record", return_value=None),
         patch("routes.analysis_routes.get_insight_context", return_value=[{}]),
     ):
         response = client.post(

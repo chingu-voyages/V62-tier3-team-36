@@ -4,7 +4,7 @@ export type RevenueTrendItem = {
 };
 
 export type RevenueBySegmentItem = {
-  segment: string;
+  customer_segment: string;
   revenue: number;
   units: number;
 };
@@ -32,7 +32,7 @@ export type TopProductItem = {
 };
 
 export type TopCustomerItem = {
-  customer: string;
+  customer_id: string;
   revenue: number;
   units: number;
 };
@@ -58,7 +58,7 @@ export type UploadAnalysis = {
   revenue_by_region?: RevenueByRegionItem[];
   revenue_by_segment?: RevenueBySegmentItem[];
   revenue_trend?: RevenueTrendItem[];
-  profit_margin?: number;
+  profit_margin?: number | null;
   growth_rate?: number;
   total_customers?: number;
   top_customers?: TopCustomerItem[];
@@ -76,7 +76,7 @@ export type UploadDetail = {
   row_errors: Array<{ row: number; error: string }>;
   analysis: UploadAnalysis | null;
   records?: UploadRecord[];
-  profit_margin?: number;
+  profit_margin?: number | null;
   growth_rate?: number;
   total_customers?: number;
   total_orders?: number;

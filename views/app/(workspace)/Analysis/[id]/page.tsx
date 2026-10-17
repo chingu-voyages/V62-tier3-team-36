@@ -1,7 +1,12 @@
 import Analysis from "../Analysis";
 
-const page = async () => {
-  return <Analysis />;
+interface AnalysisPageProps {
+  params: Promise<{ id: string }>;
+}
+
+const page = async ({ params }: AnalysisPageProps) => {
+  const { id } = await params;
+  return <Analysis uploadId={id} />;
 };
 
 export default page;
