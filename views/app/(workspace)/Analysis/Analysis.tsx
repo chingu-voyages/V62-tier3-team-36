@@ -206,7 +206,7 @@ const Analysis = ({ uploadId }: AnalysisProps) => {
       </section>
 
       {/* KPI cards */}
-      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <KPICard
           name="Total Customers"
           analysis={detail ? (detail.total_customers ?? 0) : "—"}
@@ -221,15 +221,6 @@ const Analysis = ({ uploadId }: AnalysisProps) => {
           name="Profit Margin"
           analysis={
             detail?.profit_margin == null ? "—" : `${detail.profit_margin}%`
-          }
-        />
-
-        <KPICard
-          name="Growth"
-          analysis={
-            detail?.growth == null
-              ? "—"
-              : `${detail.growth < 0 ? "- " : ""}${Math.abs(detail.growth)}%`
           }
         />
       </section>
