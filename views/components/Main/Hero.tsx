@@ -2,14 +2,26 @@
 
 import Link from "next/link";
 
+import { useEffect, useState } from "react";
+
 import PieChart from "./Charts/PieChart";
 import SimpleBarChart from "./Charts/BarChart";
 import Card from "./Card";
 
-import { useAuthStore } from "@/store/authStore";
-
 const Hero = () => {
-  const user = useAuthStore((state) => state.user);
+  const [isAuthorized, setIsAuthorized] = useState(false);
+
+  useEffect(() => {
+    const hasToken =
+      Boolean(localStorage.getItem("access_token")) ||
+      Boolean(localStorage.getItem("refresh_token"));
+
+    if (!hasToken) {
+      setIsAuthorized(false);
+    } else {
+      setIsAuthorized(true);
+    }
+  }, []);
 
   return (
     <section className="w-full py-8 sm:py-10 lg:py-12">
@@ -31,7 +43,7 @@ const Hero = () => {
           </p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            {user ? (
+            {isAuthorized ? (
               <Link
                 href="/Dashboard"
                 className="inline-flex h-12 items-center justify-center rounded-xl bg-[#202020] px-6 text-base font-semibold text-white shadow-sm transition-all duration-200 hover:bg-gray-800 hover:shadow-md"
@@ -48,7 +60,7 @@ const Hero = () => {
             )}
 
             <Link
-              href={user ? "/UploadCSV" : "/SignIn"}
+              href={isAuthorized ? "/UploadCSV" : "/SignIn"}
               className="inline-flex h-12 items-center justify-center rounded-xl border border-gray-200 bg-white px-6 text-base font-semibold text-[#202020] shadow-sm transition-all duration-200 hover:border-gray-300 hover:bg-gray-50"
             >
               Upload Your CSV
