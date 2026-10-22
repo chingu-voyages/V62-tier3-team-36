@@ -7,7 +7,6 @@ import Link from "next/link";
 import {
   generate_upload_insights,
   get_upload_csv,
-  get_upload_insights,
   regenerate_upload_insights,
   type AIInsight,
 } from "@/api/analysis";
@@ -37,6 +36,11 @@ const Analysis = ({ uploadId }: AnalysisProps) => {
       setIsLoadingUpload(true);
       setUploadError("");
       setUpload(null);
+      setInsights([]);
+      setInsightError("");
+      setIsLoadingInsights(false);
+      setHasGeneratedInsights(false);
+      setInsightLoadingMessage("");
 
       try {
         const response = await get_upload_csv(uploadId);
@@ -63,42 +67,11 @@ const Analysis = ({ uploadId }: AnalysisProps) => {
 
   const detail = upload?.analysis;
 
-  useEffect(() => {
-    let cancelled = false;
-
-    const loadSavedInsights = async () => {
-      setIsLoadingInsights(true);
-      setInsightLoadingMessage("Loading saved insights...");
-      setInsightError("");
-
-      try {
-        const response = await get_upload_insights(uploadId);
-        if (!cancelled) {
-          setInsights(response.data);
-          setHasGeneratedInsights(response.data.length > 0);
-        }
-      } catch (error: unknown) {
-        if (!cancelled) {
-          setInsightError(getInsightErrorMessage(error));
-        }
-      } finally {
-        if (!cancelled) {
-          setIsLoadingInsights(false);
-          setInsightLoadingMessage("");
-        }
-      }
-    };
-
-    loadSavedInsights();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [uploadId]);
-
   const generateInsights = async () => {
     setIsLoadingInsights(true);
-    setInsightLoadingMessage("Analyzing your data. This may take a few moments...");
+    setInsightLoadingMessage(
+      "Analyzing your data. This may take a few moments...",
+    );
     setInsightError("");
     setInsights([]);
     setHasGeneratedInsights(false);
@@ -139,11 +112,17 @@ const Analysis = ({ uploadId }: AnalysisProps) => {
       </div>
 
       {isLoadingUpload ? (
-        <p role="status" className="rounded-xl bg-white p-4 text-sm text-gray-500">
+        <p
+          role="status"
+          className="rounded-xl bg-white p-4 text-sm text-gray-500"
+        >
           Loading analysis...
         </p>
       ) : uploadError ? (
-        <p role="alert" className="rounded-xl bg-red-50 p-4 text-sm text-red-700">
+        <p
+          role="alert"
+          className="rounded-xl bg-red-50 p-4 text-sm text-red-700"
+        >
           {uploadError}
         </p>
       ) : !detail ? (
