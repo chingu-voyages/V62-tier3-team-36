@@ -93,9 +93,7 @@ SALES_RECORDS = {
         "category",
         "region",
         "units",
-        "revenue",
-        "user_id", "csv_upload_id", "order_id", "order_date",
-        "product", "category", "region", "units", "revenue",
+        "revenue"
     ],
     "properties": {
         "user_id": {"bsonType": "objectId"},
@@ -127,8 +125,6 @@ ANALYSIS_SUMMARIES = {
         "aov",
         "growth",
         "generated_at",
-        "user_id", "csv_upload_id", "total_revenue", "total_units",
-        "aov", "growth", "generated_at",
     ],
     "properties": {
         "user_id": {"bsonType": "objectId"},

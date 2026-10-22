@@ -79,7 +79,10 @@ export const MetricsCards = ({
     },
     {
       label: "Growth",
-      value: growth === undefined ? "—" : `${growth > 0 ? "+" : ""}${growth}%`,
+      value:
+        growth === undefined
+          ? "—"
+          : `${growth > 0 ? "+" : growth < 0 ? `- ${Math.abs(growth)}` : growth}%`,
       valueClasses:
         growth === undefined || growth === 0
           ? undefined
